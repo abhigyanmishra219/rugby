@@ -15,7 +15,6 @@ import {
   FileText, 
   Image as ImageIcon, 
   Phone,
-  Flame,
   ArrowUpRight
 } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
@@ -45,30 +44,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top Federation Alert Ticker */}
-      <div className="bg-[#EAF7F1] border-b border-[#E1E8E3] text-xs text-[#17211D] py-1.5 px-4 hidden md:block">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <span className="inline-flex items-center space-x-1.5 bg-[#008F65]/15 text-[#008F65] font-semibold px-2 py-0.5 rounded text-[11px] tracking-wider uppercase">
-              <Flame className="w-3 h-3 text-[#FF7900] animate-pulse" />
-              Official State Body
-            </span>
-            <span className="text-[#17211D] font-medium">
-              Rugby Association of Uttarakhand • Affiliated to Rugby India (IRFU) & UK Olympic Association
-            </span>
-          </div>
-          <div className="flex items-center space-x-4 text-[11px] font-semibold text-[#008F65]">
-            <span className="flex items-center gap-1">
-              <span>Next: 7th State Championship (Nov 14-17)</span>
-            </span>
-            <span className="text-[#C4D4CB]">•</span>
-            <a href="/register" className="hover:text-[#FF7900] transition-colors">
-              Player Registry Portal 2026-27 Open
-            </a>
-          </div>
-        </div>
-      </div>
-
       {/* Main Sticky Navbar */}
       <header
         className={`sticky top-0 z-50 w-full transition-all duration-300 ${

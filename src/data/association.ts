@@ -5,7 +5,7 @@ export const associationInfoData: AssociationInfo = {
   president: 'Mr. Yashwant Singh',
   generalSecretary: 'Mr. Ayush Kumar',
   treasurer: 'Mr. Himanshu Kumar',
-  address: 'H N 247, Adarsh Nagar, Roorkee, Haridwar, Uttarakhand, PIN 249405',
+  address: 'Mooldaspur Urf Majra near Coer college Roorkee , Haridwar',
   contacts: [
     { display: '+91 99171 34411', value: '+919917134411' },
     { display: '82794 66358', value: '+918279466358' },
