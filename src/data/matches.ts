@@ -1,0 +1,101 @@
+import { MatchFixture } from './types';
+
+export const matchesData: MatchFixture[] = [
+  {
+    id: 'match-1',
+    tournament: 'Uttarakhand State Championship',
+    round: 'Cup Final',
+    category: 'Senior Men',
+    homeTeam: 'Dehradun Himalayan Bulls',
+    homeScore: 24,
+    awayTeam: 'Nainital Lake Warriors',
+    awayScore: 17,
+    date: '2026-09-28',
+    time: '16:00 IST',
+    venue: 'Pavilion Ground, Dehradun',
+    status: 'Full Time',
+    highlight: 'Rohit Rawat scored match-winning converted try in the 78th minute.'
+  },
+  {
+    id: 'match-2',
+    tournament: 'North Zone Sevens Championship',
+    round: 'Final',
+    category: 'Senior Women',
+    homeTeam: 'Uttarakhand Himalayan Tigresses',
+    homeScore: 14,
+    awayTeam: 'Delhi Hurricanes RFC',
+    awayScore: 19,
+    date: '2026-09-24',
+    time: '15:30 IST',
+    venue: 'Sector 42 Sports Complex, Chandigarh',
+    status: 'Full Time',
+    highlight: 'Uttarakhand secured historic North Zone Silver medal.'
+  },
+  {
+    id: 'match-3',
+    tournament: 'Garhwal vs Kumaon Derby',
+    round: 'Game 3 - Decider',
+    category: 'Senior Men',
+    homeTeam: 'Garhwal Selected XV',
+    homeScore: 22,
+    awayTeam: 'Kumaon Selected XV',
+    awayScore: 15,
+    date: '2026-09-14',
+    time: '17:00 IST',
+    venue: 'Army Sports Ground, Roorkee',
+    status: 'Full Time',
+    highlight: 'Garhwal retained the Traditional Mountain Silver Shield.'
+  },
+  {
+    id: 'match-4',
+    tournament: '7th Uttarakhand State Rugby Championship',
+    round: 'Opening Pool Match',
+    category: 'Senior Men',
+    homeTeam: 'Dehradun Bulls',
+    awayTeam: 'Haridwar Ganga Strikers',
+    date: '2026-11-14',
+    time: '09:30 IST',
+    venue: 'Pavilion Ground, Pitch 1, Dehradun',
+    status: 'Upcoming',
+    highlight: 'Opening clash of the 2026 State Championship.'
+  },
+  {
+    id: 'match-5',
+    tournament: '7th Uttarakhand State Rugby Championship',
+    round: 'Pool B - Match 2',
+    category: 'Senior Women',
+    homeTeam: 'Nainital Tigresses',
+    awayTeam: 'Pauri Garhwal RFC',
+    date: '2026-11-14',
+    time: '11:00 IST',
+    venue: 'Pavilion Ground, Pitch 2, Dehradun',
+    status: 'Upcoming',
+    highlight: 'Women’s group stage heavyweight clash.'
+  },
+  {
+    id: 'match-6',
+    tournament: 'Himalayan Sevens Cup 2026',
+    round: 'Quarter-Final 1',
+    category: 'Senior Men',
+    homeTeam: 'Uttarakhand Bulls',
+    awayTeam: 'Himachal Highlanders',
+    date: '2026-12-05',
+    time: '14:00 IST',
+    venue: 'Maharana Pratap Sports Stadium, Raipur',
+    status: 'Upcoming',
+    highlight: 'Inter-state Himalayan mountain showdown.'
+  },
+  {
+    id: 'match-7',
+    tournament: 'Inter-District Junior Trophy',
+    round: 'Semi-Final',
+    category: 'U18 Boys',
+    homeTeam: 'Chamoli High Altitude RFC',
+    awayTeam: 'Udham Singh Nagar Colts',
+    date: '2026-10-25',
+    time: '15:15 IST',
+    venue: 'Indira Gandhi Stadium, Haldwani',
+    status: 'Upcoming',
+    highlight: 'Clash of styles: mountain pack vs lowland speed.'
+  }
+];

@@ -1,0 +1,190 @@
+import { Player } from './types';
+
+export const playersData: Player[] = [
+  {
+    id: 'player-rohit-rawat',
+    name: 'Rohit Rawat',
+    position: 'Fly-Half',
+    team: 'Uttarakhand Himalayan Bulls',
+    teamCategory: 'Senior Men',
+    district: 'Pauri Garhwal',
+    jerseyNumber: 10,
+    age: 22,
+    height: '181 cm',
+    weight: '82 kg',
+    caps: 24,
+    tries: 18,
+    points: 142,
+    imageUrl: 'https://images.unsplash.com/photo-1544698310-74ea9d1c8258?auto=format&fit=crop&w=900&q=80',
+    bio: 'Captain and tactical playmaker of the Senior Men’s state squad. Hailing from Srinagar Garhwal, Rohit’s trademark kicking accuracy, deceptive footwork, and commanding field generalship have earned him praise across the national rugby circuit and a call-up to the India National Camp.',
+    achievements: [
+      'North Zone 7s Player of the Tournament 2025',
+      'Highest Point Scorer - State Championship 2024 & 2025',
+      'India Senior National Camp Invitee'
+    ],
+    districtJourney: 'Started playing on school gravel fields in Pauri Garhwal before being scouted at the Dehradun Youth Trials in 2021.',
+    featured: true
+  },
+  {
+    id: 'player-anjali-negi',
+    name: 'Anjali Negi',
+    position: 'Fly-Half',
+    team: 'Uttarakhand Himalayan Tigresses',
+    teamCategory: 'Senior Women',
+    district: 'Dehradun',
+    jerseyNumber: 10,
+    age: 21,
+    height: '168 cm',
+    weight: '64 kg',
+    caps: 20,
+    tries: 22,
+    points: 110,
+    imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=900&q=80',
+    bio: 'Captaining the Senior Women’s state side, Anjali is renowned for her lightning line-breaks and fearless defensive tackles. An inspiration for young hill girls taking up rugby across Uttarakhand.',
+    achievements: [
+      'Captain - North Zone Silver Medal Winning Squad 2026',
+      'National University Games Best Back 2025',
+      'Uttarakhand Khel Ratna Emerging Athlete 2025'
+    ],
+    districtJourney: 'Trained at Parade Ground Dehradun after switching from track athletics to rugby.',
+    featured: false
+  },
+  {
+    id: 'player-suraj-rawat',
+    name: 'Suraj Rawat',
+    position: 'Scrum-Half',
+    team: 'Uttarakhand Himalayan Bulls',
+    teamCategory: 'Senior Men',
+    district: 'Dehradun',
+    jerseyNumber: 9,
+    age: 23,
+    height: '172 cm',
+    weight: '74 kg',
+    caps: 22,
+    tries: 14,
+    points: 70,
+    imageUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=900&q=80',
+    bio: 'Dynamic distributor who controls the tempo of the Uttarakhand attack. His rapid delivery from rucks and sharp sniping runs keep opposition forwards guessing.',
+    achievements: [
+      'State Championship Best Scrum-Half 2025',
+      'All-India Inter-University Gold Medalist'
+    ],
+    districtJourney: 'Product of the Dehradun District Sports Academy.',
+    featured: false
+  },
+  {
+    id: 'player-meenakshi-pandey',
+    name: 'Meenakshi Pandey',
+    position: 'Full-Back',
+    team: 'Uttarakhand Himalayan Tigresses',
+    teamCategory: 'Senior Women',
+    district: 'Nainital',
+    jerseyNumber: 15,
+    age: 20,
+    height: '170 cm',
+    weight: '62 kg',
+    caps: 16,
+    tries: 12,
+    points: 60,
+    imageUrl: 'https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=900&q=80',
+    bio: 'Rock-solid last line of defense with exceptional catching under the high ball and counter-attacking vision from deep in her 22.',
+    achievements: [
+      'North Zone 7s Best Defensive Player 2026',
+      'Kumaon Division Champion with Nainital RFC'
+    ],
+    districtJourney: 'Discovered during an open rugby clinic in Haldwani, Nainital.',
+    featured: false
+  },
+  {
+    id: 'player-devendra-joshi',
+    name: 'Devendra Joshi',
+    position: 'Prop',
+    team: 'Uttarakhand Himalayan Bulls',
+    teamCategory: 'Senior Men',
+    district: 'Almora',
+    jerseyNumber: 1,
+    age: 25,
+    height: '185 cm',
+    weight: '104 kg',
+    caps: 28,
+    tries: 6,
+    points: 30,
+    imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=900&q=80',
+    bio: 'Anchor of the Himalayan Bulls scrum. Built like granite from the Almora hills, Devendra provides the physical platform that powers the state team.',
+    achievements: [
+      '5 Consecutive State Championship Appearances',
+      'North Zone XVs Best Forward 2024'
+    ],
+    districtJourney: 'Began lifting weights in Almora before joining rugby through university sports.',
+    featured: false
+  },
+  {
+    id: 'player-pradeep-chamoli',
+    name: 'Pradeep Chamoli',
+    position: 'Lock',
+    team: 'Uttarakhand Himalayan Bulls',
+    teamCategory: 'Senior Men',
+    district: 'Chamoli',
+    jerseyNumber: 4,
+    age: 24,
+    height: '194 cm',
+    weight: '98 kg',
+    caps: 18,
+    tries: 5,
+    points: 25,
+    imageUrl: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=900&q=80',
+    bio: 'Towering lineout specialist hailing from the high altitude valleys of Chamoli. His aerial dominance gives Uttarakhand clean first-phase possession.',
+    achievements: [
+      'Top Lineout Stealer - North Zone 2025',
+      'Garhwal University Sports Captain'
+    ],
+    districtJourney: 'Trained at high-altitude training grounds in Gopeshwar and Joshimath.',
+    featured: false
+  },
+  {
+    id: 'player-pooja-karki',
+    name: 'Pooja Karki',
+    position: 'Scrum-Half',
+    team: 'Uttarakhand Himalayan Tigresses',
+    teamCategory: 'Senior Women',
+    district: 'Pithoragarh',
+    jerseyNumber: 9,
+    age: 19,
+    height: '162 cm',
+    weight: '58 kg',
+    caps: 12,
+    tries: 9,
+    points: 45,
+    imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=900&q=80',
+    bio: 'Energetic halfback from the eastern border district of Pithoragarh whose tenacity and quick distribution sparked Uttarakhand’s run at the North Zone Sevens.',
+    achievements: [
+      'Uttarakhand Youth Athlete of the Year 2025',
+      'School Games National Bronze'
+    ],
+    districtJourney: 'First player from Pithoragarh to represent the state senior team.',
+    featured: false
+  },
+  {
+    id: 'player-aman-verma',
+    name: 'Aman Deep Verma',
+    position: 'Wing',
+    team: 'Uttarakhand Himalayan Bulls',
+    teamCategory: 'Senior Men',
+    district: 'Haridwar',
+    jerseyNumber: 11,
+    age: 21,
+    height: '178 cm',
+    weight: '78 kg',
+    caps: 15,
+    tries: 16,
+    points: 80,
+    imageUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=900&q=80',
+    bio: 'Speed merchant capable of clocking 10.9s in the 100m. Lethal on the counter-attack and an expert finisher in the corner.',
+    achievements: [
+      'Most Tries in State League 2025 (11 tries)',
+      'Uttarakhand State Athletics 100m Silver Medalist'
+    ],
+    districtJourney: 'Switched from sprinting to rugby at Roorkee Sports Complex.',
+    featured: false
+  }
+];
