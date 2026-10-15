@@ -20,7 +20,6 @@ import {
   HeartHandshake
 } from 'lucide-react';
 import SectionHeader from '@/components/SectionHeader';
-import CompetitionCard from '@/components/CompetitionCard';
 import MatchCard from '@/components/MatchCard';
 import StatisticCounter from '@/components/StatisticCounter';
 import HeroBackgroundSlider from '@/components/HeroBackgroundSlider';
@@ -29,7 +28,6 @@ import rugbyLogo from '@/images/rubgylogo.png';
 import uwillgetLogo from '@/images/logo/logo.jpeg';
 import imgKotdwarSquad from '@/images/Screenshot 2026-10-09 101150.png';
 
-import { competitionsData } from '@/data/competitions';
 import { matchesData } from '@/data/matches';
 import TournamentCard from '@/components/TournamentCard';
 import { upcomingTournamentsData } from '@/data/tournaments';
@@ -219,7 +217,7 @@ export default function HomePage() {
               <div className="text-xs font-bold text-[#00B889] uppercase tracking-wider mt-0.5">APPROVED COACHES</div>
             </div>
             <div>
-              <div className="text-2xl sm:text-3xl font-black text-white">13 / 13</div>
+              <div className="text-2xl sm:text-3xl font-black text-white">10 / 10</div>
               <div className="text-xs font-bold text-[#FF7900] uppercase tracking-wider mt-0.5">DISTRICTS ACTIVE</div>
             </div>
           </div>
@@ -246,7 +244,7 @@ export default function HomePage() {
             </div>
 
             {/* Tab Controls */}
-            <div className="flex items-center space-x-1.5 bg-[#F5F7F5] p-1 rounded-lg border border-[#E1E8E3]">
+            {/* <div className="flex items-center space-x-1.5 bg-[#F5F7F5] p-1 rounded-lg border border-[#E1E8E3]">
               {(['UPCOMING', 'RESULTS', 'FIXTURES'] as const).map((tab) => (
                 <button
                   key={tab}
@@ -259,7 +257,7 @@ export default function HomePage() {
                   {tab}
                 </button>
               ))}
-            </div>
+            </div> */}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -268,7 +266,7 @@ export default function HomePage() {
                 {upcomingTournamentsData.map((tournament) => (
                   <TournamentCard key={tournament.id} tournament={tournament} />
                 ))}
-                {upcomingMatches.slice(0, 2).map((match) => (
+                {upcomingMatches.map((match) => (
                   <MatchCard key={match.id} match={match} />
                 ))}
               </>
@@ -291,25 +289,7 @@ export default function HomePage() {
       </section>
 
 
-      {/* =========================================================================
-          4. UPCOMING COMPETITIONS & TOURNAMENT ACTION
-      ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeader
-          badge="CALENDAR 2026-27"
-          title="UPCOMING"
-          highlightedTitle="ACTION"
-          subtitle="Witness high-voltage rugby across Dehradun, Haldwani, Haridwar, and mountain stadium venues."
-          linkText="VIEW ALL COMPETITIONS"
-          linkHref="/competitions"
-        />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {competitionsData.slice(0, 3).map((comp) => (
-            <CompetitionCard key={comp.id} competition={comp} />
-          ))}
-        </div>
-      </section>
 
       {/* =========================================================================
           7. RUGBY IN UTTARAKHAND (Storytelling Split Layout + Counters)
@@ -376,9 +356,9 @@ export default function HomePage() {
                 icon={Award}
               />
               <StatisticCounter
-                value={13}
+                value={10}
                 label="Districts Covered"
-                sublabel="All 13 Garhwal & Kumaon districts active in state rugby"
+                sublabel="All 10 Garhwal & Kumaon districts active in state rugby"
                 icon={MapPin}
               />
             </div>
@@ -409,112 +389,6 @@ export default function HomePage() {
           linkText="JOIN AS BEGINNER"
           linkHref="/register"
         />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Card 1: Rugby 7s */}
-          <div className="rounded-xl overflow-hidden bg-white border border-[#E1E8E3] hover:border-[#008F65] hover:shadow-md transition-all p-5 flex flex-col justify-between shadow-xs">
-            <div className="space-y-3">
-              <div className="aspect-video rounded-lg overflow-hidden bg-[#F5F7F5] relative">
-                <img
-                  src="https://images.unsplash.com/photo-1544698310-74ea9d1c8258?auto=format&fit=crop&w=600&q=80"
-                  alt="Rugby 7s"
-                  className="w-full h-full object-cover"
-                />
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[#FF7900] text-white text-[10px] font-black uppercase">
-                  OLYMPIC FORMAT
-                </span>
-              </div>
-              <h3 className="text-lg font-black text-[#17211D] uppercase">RUGBY 7s</h3>
-              <p className="text-xs text-[#5F6B65] leading-relaxed">
-                Fast-paced seven-player format emphasizing breathtaking speed, agility, and open-field running over two 7-minute halves.
-              </p>
-            </div>
-            <div className="pt-4 mt-2 border-t border-[#E1E8E3]">
-              <a href="/register?format=7s" className="text-xs font-bold text-[#008F65] hover:text-[#FF7900] flex items-center gap-1">
-                <span>Learn & Register</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-
-          {/* Card 2: Rugby XVs */}
-          <div className="rounded-xl overflow-hidden bg-white border border-[#E1E8E3] hover:border-[#008F65] hover:shadow-md transition-all p-5 flex flex-col justify-between shadow-xs">
-            <div className="space-y-3">
-              <div className="aspect-video rounded-lg overflow-hidden bg-[#F5F7F5] relative">
-                <img
-                  src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=600&q=80"
-                  alt="Rugby XVs"
-                  className="w-full h-full object-cover"
-                />
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[#008F65] text-white text-[10px] font-black uppercase">
-                  TRADITIONAL FORMAT
-                </span>
-              </div>
-              <h3 className="text-lg font-black text-[#17211D] uppercase">RUGBY XVs</h3>
-              <p className="text-xs text-[#5F6B65] leading-relaxed">
-                Traditional fifteen-player rugby union combining forward scrums, lineouts, tactical kicking, and endurance across 80 minutes.
-              </p>
-            </div>
-            <div className="pt-4 mt-2 border-t border-[#E1E8E3]">
-              <a href="/register?format=15s" className="text-xs font-bold text-[#008F65] hover:text-[#FF7900] flex items-center gap-1">
-                <span>Learn & Register</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-
-          {/* Card 3: Touch Rugby */}
-          <div className="rounded-xl overflow-hidden bg-white border border-[#E1E8E3] hover:border-[#008F65] hover:shadow-md transition-all p-5 flex flex-col justify-between shadow-xs">
-            <div className="space-y-3">
-              <div className="aspect-video rounded-lg overflow-hidden bg-[#F5F7F5] relative">
-                <img
-                  src="https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=600&q=80"
-                  alt="Touch Rugby"
-                  className="w-full h-full object-cover"
-                />
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[#00B889] text-white text-[10px] font-black uppercase">
-                  NON-CONTACT
-                </span>
-              </div>
-              <h3 className="text-lg font-black text-[#17211D] uppercase">TOUCH RUGBY</h3>
-              <p className="text-xs text-[#5F6B65] leading-relaxed">
-                Skill-focused, non-contact format ideal for beginners, mixed-gender community games, schools, and corporate leagues.
-              </p>
-            </div>
-            <div className="pt-4 mt-2 border-t border-[#E1E8E3]">
-              <a href="/register?format=touch" className="text-xs font-bold text-[#008F65] hover:text-[#FF7900] flex items-center gap-1">
-                <span>Learn & Register</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-
-          {/* Card 4: Grassroots */}
-          <div className="rounded-xl overflow-hidden bg-white border border-[#E1E8E3] hover:border-[#008F65] hover:shadow-md transition-all p-5 flex flex-col justify-between shadow-xs">
-            <div className="space-y-3">
-              <div className="aspect-video rounded-lg overflow-hidden bg-[#F5F7F5] relative">
-                <img
-                  src="https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=600&q=80"
-                  alt="Grassroots Rugby"
-                  className="w-full h-full object-cover"
-                />
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-[#FF7900] text-white text-[10px] font-black uppercase">
-                  COMMUNITY & YOUTH
-                </span>
-              </div>
-              <h3 className="text-lg font-black text-[#17211D] uppercase">GRASSROOTS</h3>
-              <p className="text-xs text-[#5F6B65] leading-relaxed">
-                Start your journey from age 7 upwards. Free tag rugby clinics, certified mentor sessions, and district school festivals.
-              </p>
-            </div>
-            <div className="pt-4 mt-2 border-t border-[#E1E8E3]">
-              <a href="/register?format=grassroots" className="text-xs font-bold text-[#008F65] hover:text-[#FF7900] flex items-center gap-1">
-                <span>Learn & Register</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* =========================================================================

@@ -18,10 +18,10 @@ export default function DistrictMap() {
           setPlayerCount(d.count);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
-  const filteredDistricts = districtsData.filter(d => 
+  const filteredDistricts = districtsData.filter(d =>
     filterDivision === 'ALL' ? true : d.division === filterDivision
   );
 
@@ -38,7 +38,7 @@ export default function DistrictMap() {
             <span>DEVBHOOMI RUGBY NETWORK</span>
           </div>
           <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#17211D] uppercase tracking-tight">
-            13 DISTRICTS • 2 DIVISIONS • ONE RUGBY FAMILY
+            10 DISTRICTS • 2 DIVISIONS • ONE RUGBY FAMILY
           </h3>
           <p className="text-xs sm:text-sm text-[#5F6B65] mt-1 max-w-xl">
             Click any district to explore grassroots development, registered clubs, active athletes, and regional tournament grounds.
@@ -51,13 +51,12 @@ export default function DistrictMap() {
             <button
               key={div}
               onClick={() => setFilterDivision(div)}
-              className={`px-3 py-1.5 rounded text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
-                filterDivision === div
+              className={`px-3 py-1.5 rounded text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer ${filterDivision === div
                   ? 'bg-[#008F65] text-white shadow-xs'
                   : 'text-[#5F6B65] hover:text-[#17211D]'
-              }`}
+                }`}
             >
-              {div === 'ALL' ? 'ALL 13 DISTRICTS' : `${div} DIVISION`}
+              {div === 'ALL' ? 'ALL 10 DISTRICTS' : `${div} DIVISION`}
             </button>
           ))}
         </div>
@@ -79,11 +78,10 @@ export default function DistrictMap() {
                 <button
                   key={district.id}
                   onClick={() => setSelectedDistrict(district)}
-                  className={`p-3 rounded-lg text-left transition-all duration-200 border flex flex-col justify-between cursor-pointer ${
-                    isSelected
+                  className={`p-3 rounded-lg text-left transition-all duration-200 border flex flex-col justify-between cursor-pointer ${isSelected
                       ? 'bg-[#EAF7F1] border-[#008F65] text-[#17211D] shadow-xs scale-[1.02]'
                       : 'bg-[#F5F7F5] border-[#E1E8E3] text-[#17211D] hover:border-[#008F65] hover:bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between w-full mb-2">
                     <span className="text-[10px] font-black uppercase text-[#008F65] px-1.5 py-0.5 rounded bg-white border border-[#E1E8E3]">

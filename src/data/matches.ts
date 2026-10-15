@@ -30,44 +30,5 @@ export const matchesData: MatchFixture[] = [
     venue: 'Army Sports Ground, Roorkee',
     status: 'Full Time',
     highlight: 'Garhwal retained the Traditional Mountain Silver Shield.'
-  },
-  {
-    id: 'match-4',
-    tournament: '7th Uttarakhand State Rugby Championship',
-    round: 'Opening Pool Match',
-    category: 'Senior Men',
-    homeTeam: 'Dehradun Bulls',
-    awayTeam: 'Haridwar Ganga Strikers',
-    date: '2026-11-14',
-    time: '09:30 IST',
-    venue: 'Pavilion Ground, Pitch 1, Dehradun',
-    status: 'Upcoming',
-    highlight: 'Opening clash of the 2026 State Championship.'
-  },
-  {
-    id: 'match-5',
-    tournament: '7th Uttarakhand State Rugby Championship',
-    round: 'Pool B - Match 2',
-    category: 'Senior Women',
-    homeTeam: 'Nainital Tigresses',
-    awayTeam: 'Pauri Garhwal RFC',
-    date: '2026-11-14',
-    time: '11:00 IST',
-    venue: 'Pavilion Ground, Pitch 2, Dehradun',
-    status: 'Upcoming',
-    highlight: 'Women’s group stage heavyweight clash.'
-  },
-  {
-    id: 'match-7',
-    tournament: 'Inter-District Junior Trophy',
-    round: 'Semi-Final',
-    category: 'U18 Boys',
-    homeTeam: 'Chamoli High Altitude RFC',
-    awayTeam: 'Udham Singh Nagar Colts',
-    date: '2026-10-25',
-    time: '15:15 IST',
-    venue: 'Indira Gandhi Stadium, Haldwani',
-    status: 'Upcoming',
-    highlight: 'Clash of styles: mountain pack vs lowland speed.'
   }
 ];
