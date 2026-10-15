@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import {
   Shield,
   MapPin,
@@ -12,6 +13,7 @@ import {
   Globe
 } from 'lucide-react';
 import SocialLinks from '@/components/SocialLinks';
+import rugbyLogo from '@/images/rubgylogo.png';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
@@ -43,13 +45,19 @@ export default function Footer() {
           {/* Column 1: Federation Identity & Motto */}
           <div className="lg:col-span-4 space-y-5">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#008F65] to-[#03150d] p-0.5 flex items-center justify-center shadow-md">
-                <div className="w-full h-full bg-[#071710] rounded-[6px] flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-[#00B889]" />
-                </div>
+              <div className="w-12 h-12 rounded-lg bg-black border border-[#008F65]/30 p-0.5 flex items-center justify-center shadow-md overflow-hidden shrink-0">
+                <Image
+                  src={rugbyLogo}
+                  alt="Uttarakhand Rugby Association Logo"
+                  width={48}
+                  height={48}
+                  className="w-full h-full object-contain rounded-[6px]"
+                />
               </div>
               <div>
-                <span className="font-black text-xl text-[#17211D] tracking-tight">RUGBY UTTARAKHAND</span>
+                <span className="font-black text-lg text-[#17211D] tracking-tight leading-tight block">
+                  UTTARAKHAND RUGBY ASSOCIATION
+                </span>
                 <p className="text-[11px] font-semibold text-[#008F65] uppercase tracking-widest">
                   State Governing Sports Organization
                 </p>
@@ -129,7 +137,7 @@ export default function Footer() {
           </div>
 
           <div className="text-center md:text-right">
-            © {new Date().getFullYear()} Rugby Uttarakhand. All Rights Reserved.
+            © {new Date().getFullYear()} Uttarakhand Rugby Association. All Rights Reserved.
           </div>
         </div>
       </div>

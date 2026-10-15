@@ -5,24 +5,24 @@ import Footer from '@/components/Footer';
 import { UserProvider } from '@/context/UserContext';
 
 export const metadata: Metadata = {
-  title: 'Rugby Uttarakhand | Official State Rugby Association | Devbhoomi Sports',
+  title: 'Uttarakhand Rugby Association | Official State Rugby Association | Devbhoomi Sports',
   description: 'Official governing sports organization for Rugby Union and Rugby Sevens in Uttarakhand, India. Developing players, clubs, tournaments, and grassroots rugby across Garhwal and Kumaon.',
   keywords: [
+    'Uttarakhand Rugby Association',
     'Rugby Uttarakhand',
     'Rugby in Uttarakhand',
     'Uttarakhand Rugby',
-    'Rugby Association Uttarakhand',
     'Rugby clubs Uttarakhand',
     'Rugby tournaments Uttarakhand',
     'Himalayan Rugby',
     'Rugby India IRFU Uttarakhand'
   ],
-  authors: [{ name: 'Rugby Uttarakhand Technical Unit' }],
+  authors: [{ name: 'Uttarakhand Rugby Association Technical Unit' }],
   openGraph: {
-    title: 'Rugby Uttarakhand | Official State Rugby Association',
+    title: 'Uttarakhand Rugby Association | Official State Rugby Association',
     description: 'Building the future of rugby in the Himalayas. Discover state teams, tournaments, player registrations, and district development.',
     url: 'https://rugbyuttarakhand.org',
-    siteName: 'Rugby Uttarakhand',
+    siteName: 'Uttarakhand Rugby Association',
     locale: 'en_IN',
     type: 'website',
   },

@@ -25,11 +25,14 @@ import MatchCard from '@/components/MatchCard';
 import StatisticCounter from '@/components/StatisticCounter';
 import HeroBackgroundSlider from '@/components/HeroBackgroundSlider';
 import Image from 'next/image';
+import rugbyLogo from '@/images/rubgylogo.png';
 import uwillgetLogo from '@/images/logo/logo.jpeg';
 import imgKotdwarSquad from '@/images/Screenshot 2026-10-09 101150.png';
 
 import { competitionsData } from '@/data/competitions';
 import { matchesData } from '@/data/matches';
+import TournamentCard from '@/components/TournamentCard';
+import { upcomingTournamentsData } from '@/data/tournaments';
 
 function HeroCounter({ value, isLoading }: { value: number; isLoading?: boolean }) {
   const [count, setCount] = useState(0);
@@ -78,6 +81,8 @@ export default function HomePage() {
   const [matchTab, setMatchTab] = useState<'UPCOMING' | 'RESULTS' | 'FIXTURES'>('UPCOMING');
   const [playerCount, setPlayerCount] = useState<number | null>(null);
   const [isLoadingCount, setIsLoadingCount] = useState(true);
+  const [coachCount, setCoachCount] = useState<number | null>(null);
+  const [isLoadingCoachCount, setIsLoadingCoachCount] = useState(true);
 
   // Fetch actual dynamic registered player count from MongoDB
   useEffect(() => {
@@ -100,7 +105,26 @@ export default function HomePage() {
       }
     }
 
+    async function fetchCoachCount() {
+      try {
+        const res = await fetch('/api/coaches/count');
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.success && typeof data.count === 'number') {
+            setCoachCount(data.count);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching coach count:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingCoachCount(false);
+        }
+      }
+    }
+
     fetchPlayerCount();
+    fetchCoachCount();
     return () => {
       isMounted = false;
     };
@@ -109,10 +133,6 @@ export default function HomePage() {
   const upcomingMatches = matchesData.filter((m) => m.status === 'Upcoming');
   const resultMatches = matchesData.filter((m) => m.status === 'Full Time');
   const allFixtures = matchesData;
-
-  const displayedMatches =
-    matchTab === 'UPCOMING' ? upcomingMatches :
-      matchTab === 'RESULTS' ? resultMatches : allFixtures;
 
   return (
     <div className="space-y-24 sm:space-y-32">
@@ -141,9 +161,17 @@ export default function HomePage() {
             </div>
 
             {/* Federation Title */}
-            <div className="text-[#FF7900] font-black text-sm sm:text-base tracking-widest uppercase flex items-center gap-2">
-              <Shield className="w-4 h-4 text-[#FF7900]" />
-              <span>RUGBY UTTARAKHAND</span>
+            <div className="text-[#FF7900] font-black text-sm sm:text-base tracking-widest uppercase flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded bg-black/60 p-0.5 border border-[#00B889]/40 overflow-hidden flex items-center justify-center shrink-0">
+                <Image
+                  src={rugbyLogo}
+                  alt="Uttarakhand Rugby Association"
+                  width={24}
+                  height={24}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span>UTTARAKHAND RUGBY ASSOCIATION</span>
             </div>
 
             {/* Main Headline */}
@@ -170,19 +198,25 @@ export default function HomePage() {
                 href="/register"
                 className="px-8 py-4 rounded-lg bg-black/50 hover:bg-black/70 border border-white/30 text-white font-black text-sm uppercase tracking-wider backdrop-blur-md transition-all flex items-center gap-2 hover:border-[#FF7900]"
               >
-                <span>JOIN THE MOVEMENT</span>
+                <span>JOIN RUGBY</span>
                 <Flame className="w-4 h-4 text-[#FF7900]" />
               </a>
             </div>
           </div>
 
           {/* Quick Metrics Strip */}
-          <div className="mt-14 pt-8 border-t border-white/20 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-4xl">
+          <div className="mt-14 pt-8 border-t border-white/20 grid grid-cols-2 sm:grid-cols-3 gap-6 max-w-4xl">
             <div>
               <div className="text-2xl sm:text-3xl font-black text-white">
                 <HeroCounter value={playerCount ?? 0} isLoading={isLoadingCount} />
               </div>
               <div className="text-xs font-bold text-[#00B889] uppercase tracking-wider mt-0.5">APPROVED ATHLETES</div>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white">
+                <HeroCounter value={coachCount ?? 0} isLoading={isLoadingCoachCount} />
+              </div>
+              <div className="text-xs font-bold text-[#00B889] uppercase tracking-wider mt-0.5">APPROVED COACHES</div>
             </div>
             <div>
               <div className="text-2xl sm:text-3xl font-black text-white">13 / 13</div>
@@ -199,7 +233,7 @@ export default function HomePage() {
       </section>
 
       {/* =========================================================================
-          2. SCOREBOARD & FIXTURES TICKER / RESULTS COMPONENT
+          2. UPCOMING EVENTS & MATCH SCOREBOARD
       ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-30">
         <div className="rounded-2xl bg-white border border-[#E1E8E3] p-5 sm:p-6 shadow-xl">
@@ -207,7 +241,7 @@ export default function HomePage() {
             <div className="flex items-center space-x-2">
               <Trophy className="w-5 h-5 text-[#FF7900]" />
               <span className="text-sm font-black text-[#17211D] uppercase tracking-wider">
-                MATCH SCOREBOARD & FIXTURES
+                UPCOMING MATCHES & EVENTS
               </span>
             </div>
 
@@ -229,9 +263,29 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayedMatches.slice(0, 3).map((match) => (
-              <MatchCard key={match.id} match={match} />
-            ))}
+            {matchTab === 'UPCOMING' ? (
+              <>
+                {upcomingTournamentsData.map((tournament) => (
+                  <TournamentCard key={tournament.id} tournament={tournament} />
+                ))}
+                {upcomingMatches.slice(0, 2).map((match) => (
+                  <MatchCard key={match.id} match={match} />
+                ))}
+              </>
+            ) : matchTab === 'RESULTS' ? (
+              resultMatches.slice(0, 3).map((match) => (
+                <MatchCard key={match.id} match={match} />
+              ))
+            ) : (
+              <>
+                {upcomingTournamentsData.map((tournament) => (
+                  <TournamentCard key={tournament.id} tournament={tournament} />
+                ))}
+                {allFixtures.slice(0, 2).map((match) => (
+                  <MatchCard key={match.id} match={match} />
+                ))}
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -301,18 +355,25 @@ export default function HomePage() {
                 From the bustling sports grounds of Dehradun and Roorkee to high-altitude schools nestled in Chamoli and Pithoragarh, rugby has found natural home in Uttarakhand. The state’s youth possess an innate physical toughness and endurance forged by mountain topography.
               </p>
               <p>
-                Founded to govern and professionalize the sport, the Rugby Association of Uttarakhand is committed to building an all-inclusive sporting pyramid. Our focus spans equal access for girls and boys, structured coach certifications, and state-of-the-art conditioning to challenge the very best teams in India.
+                Founded to govern and professionalize the sport, the Uttarakhand Rugby Association is committed to building an all-inclusive sporting pyramid. Our focus spans equal access for girls and boys, structured coach certifications, and state-of-the-art conditioning to challenge the very best teams in India.
               </p>
             </div>
 
             {/* Animated Counters */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 pt-4">
               <StatisticCounter
                 value={playerCount ?? 0}
                 isLoading={isLoadingCount}
                 label="APPROVED PLAYERS"
                 sublabel="Athletes across senior, youth & grassroots pathways"
                 icon={Users}
+              />
+              <StatisticCounter
+                value={coachCount ?? 0}
+                isLoading={isLoadingCoachCount}
+                label="APPROVED COACHES"
+                sublabel="Certified technical mentors developing talent across districts"
+                icon={Award}
               />
               <StatisticCounter
                 value={13}
@@ -551,7 +612,7 @@ export default function HomePage() {
 
           {/* 3. Short Supporting Description */}
           <p className="text-xs sm:text-sm md:text-base text-[#5F6B65] max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed font-normal relative z-10">
-            Empowering Rugby Uttarakhand through digital innovation, technology, and support for the growth of rugby.
+            Empowering Uttarakhand Rugby Association through digital innovation, technology, and support for the growth of rugby.
           </p>
 
           {/* 4. Large, Centered UwillGet Logo in Tasteful Container */}

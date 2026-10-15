@@ -17,21 +17,6 @@ export const matchesData: MatchFixture[] = [
     highlight: 'Rohit Rawat scored match-winning converted try in the 78th minute.'
   },
   {
-    id: 'match-2',
-    tournament: 'North Zone Sevens Championship',
-    round: 'Final',
-    category: 'Senior Women',
-    homeTeam: 'Uttarakhand Himalayan Tigresses',
-    homeScore: 14,
-    awayTeam: 'Delhi Hurricanes RFC',
-    awayScore: 19,
-    date: '2026-09-24',
-    time: '15:30 IST',
-    venue: 'Sector 42 Sports Complex, Chandigarh',
-    status: 'Full Time',
-    highlight: 'Uttarakhand secured historic North Zone Silver medal.'
-  },
-  {
     id: 'match-3',
     tournament: 'Garhwal vs Kumaon Derby',
     round: 'Game 3 - Decider',
@@ -71,19 +56,6 @@ export const matchesData: MatchFixture[] = [
     venue: 'Pavilion Ground, Pitch 2, Dehradun',
     status: 'Upcoming',
     highlight: 'Women’s group stage heavyweight clash.'
-  },
-  {
-    id: 'match-6',
-    tournament: 'Himalayan Sevens Cup 2026',
-    round: 'Quarter-Final 1',
-    category: 'Senior Men',
-    homeTeam: 'Uttarakhand Bulls',
-    awayTeam: 'Himachal Highlanders',
-    date: '2026-12-05',
-    time: '14:00 IST',
-    venue: 'Maharana Pratap Sports Stadium, Raipur',
-    status: 'Upcoming',
-    highlight: 'Inter-state Himalayan mountain showdown.'
   },
   {
     id: 'match-7',

@@ -2,6 +2,27 @@ import { Competition } from './types';
 
 export const competitionsData: Competition[] = [
   {
+    id: 'comp-asmita',
+    name: 'Asmita Rugby State Tournament',
+    subtitle: 'Official State Level Tournament for U15 & U18',
+    category: 'U15 & U18',
+    format: 'Rugby 7s',
+    startDate: '2026-10-27',
+    endDate: '2026-10-28',
+    dayDisplay: '27-28',
+    monthDisplay: 'OCT',
+    yearDisplay: '2026',
+    venue: 'Rohnawal Stadium, Haridwar',
+    district: 'Haridwar',
+    location: 'Haridwar, Uttarakhand',
+    status: 'Upcoming',
+    registeredTeamsCount: 16,
+    fixturesCount: 24,
+    description: 'Official state tournament organized by Uttarakhand Rugby Association at Rohnawal Stadium, Haridwar, featuring Under-15 and Under-18 divisions.',
+    featured: true,
+    standings: []
+  },
+  {
     id: 'comp-1',
     name: '7th Uttarakhand State Rugby Championship',
     subtitle: 'Official State Level Rugby 7s & XVs Championship',

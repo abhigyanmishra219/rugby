@@ -31,10 +31,10 @@ export default function AboutPage() {
             <span>OFFICIAL GOVERNING BODY</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-black text-[#17211D] uppercase tracking-tight leading-tight">
-            ABOUT <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#008F65] to-[#00B889]">RUGBY UTTARAKHAND</span>
+            ABOUT <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#008F65] to-[#00B889]">UTTARAKHAND RUGBY ASSOCIATION</span>
           </h1>
           <p className="text-sm sm:text-base text-[#5F6B65] leading-relaxed font-normal">
-            The Rugby Association of Uttarakhand is the apex state organization recognized by the Indian Rugby Football Union (Rugby India) and the Uttarakhand Olympic Association. We are dedicated to developing, regulating, and advancing the sport of rugby from grassroots schools in the Himalayas to the national and international stage.
+            The Uttarakhand Rugby Association is the apex state organization recognized by the Indian Rugby Football Union (Rugby India) and the Uttarakhand Olympic Association. We are dedicated to developing, regulating, and advancing the sport of rugby from grassroots schools in the Himalayas to the national and international stage.
           </p>
         </div>
       </section>
@@ -54,7 +54,7 @@ export default function AboutPage() {
               Rugby in Uttarakhand represents more than just a competitive team sport—it embodies the inherent stamina, courage, and camaraderie of the mountain people. Established to channel the exceptional natural physical conditioning of hill youth into high-performance athletic channels, the association has grown from informal university clusters into a formally recognized state federation.
             </p>
             <p>
-              Today, Rugby Uttarakhand governs official state championships in Rugby XVs and Olympic Rugby 7s, oversees a registered talent pool of over 2,800 athletes across 13 districts, conducts certified World Rugby coaching courses, and prepares provincial teams for National Games and All-India tournaments.
+              Today, Uttarakhand Rugby Association governs official state championships in Rugby XVs and Olympic Rugby 7s, oversees a registered talent pool of over 2,800 athletes across 13 districts, conducts certified World Rugby coaching courses, and prepares provincial teams for National Games and All-India tournaments.
             </p>
           </div>
         </div>
@@ -63,7 +63,7 @@ export default function AboutPage() {
           <div className="rounded-xl overflow-hidden aspect-[4/3] bg-[#F5F7F5] border border-[#E1E8E3] shadow-md">
             <img
               src="https://images.unsplash.com/photo-1544698310-74ea9d1c8258?auto=format&fit=crop&w=1000&q=80"
-              alt="Rugby Uttarakhand Team"
+              alt="Uttarakhand Rugby Association Team"
               className="w-full h-full object-cover"
             />
           </div>

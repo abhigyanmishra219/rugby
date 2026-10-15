@@ -6,7 +6,7 @@ export const leadershipData: LeaderItem[] = [
     name: 'Shri B. S. Rawat',
     position: 'President',
     qualification: 'Former State Sports Council Member & Advocate',
-    affiliation: 'Rugby Association of Uttarakhand',
+    affiliation: 'Uttarakhand Rugby Association',
     imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
     bio: 'Guiding the strategic vision, governance compliance, and state institutional partnerships for rugby development across Uttarakhand since 2020.'
   },
@@ -15,7 +15,7 @@ export const leadershipData: LeaderItem[] = [
     name: 'Sanjay Thapa',
     position: 'General Secretary',
     qualification: 'Former National Athlete & World Rugby Educator',
-    affiliation: 'Rugby Association of Uttarakhand',
+    affiliation: 'Uttarakhand Rugby Association',
     imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
     bio: 'Oversees day-to-day federation operations, IRFU / Rugby India coordination, district affiliations, and tournament sanctions.'
   },
@@ -78,7 +78,7 @@ export const partnersData: PartnerItem[] = [
     id: 'partner-2',
     name: 'Uttarakhand Olympic Association (UOA)',
     category: 'State Sports Body',
-    description: 'Apex state olympic governing council recognizing Rugby Uttarakhand as the official state body.',
+    description: 'Apex state olympic governing council recognizing Uttarakhand Rugby Association as the official state body.',
     logoText: 'UK OLYMPIC ASSOC'
   },
   {

@@ -3,7 +3,7 @@ import { DocumentItem } from './types';
 export const documentsData: DocumentItem[] = [
   {
     id: 'doc-1',
-    title: 'Rugby Uttarakhand Official Constitution & By-Laws (Amended 2025)',
+    title: 'Uttarakhand Rugby Association Official Constitution & By-Laws (Amended 2025)',
     category: 'Policies',
     date: '2025-11-20',
     fileType: 'PDF',
@@ -63,7 +63,7 @@ export const documentsData: DocumentItem[] = [
   },
   {
     id: 'doc-7',
-    title: 'Rugby Uttarakhand Annual Financial & Activity Report 2024-25',
+    title: 'Uttarakhand Rugby Association Annual Financial & Activity Report 2024-25',
     category: 'Annual Reports',
     date: '2025-12-10',
     fileType: 'PDF',

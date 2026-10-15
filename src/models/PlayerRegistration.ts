@@ -20,6 +20,10 @@ export interface IPlayerRegistration extends Document {
   approvedBy?: string;
   approvedById?: string;
   approvedAt?: Date;
+  rejectedBy?: string;
+  rejectedById?: string;
+  rejectedAt?: Date;
+  rejectionReason?: string;
   deletedBy?: string;
   deletedById?: string;
   deletedAt?: Date;
@@ -113,6 +117,22 @@ const PlayerRegistrationSchema: Schema<IPlayerRegistration> = new Schema(
     },
     approvedAt: {
       type: Date,
+    },
+    rejectedBy: {
+      type: String,
+      default: '',
+    },
+    rejectedById: {
+      type: String,
+      default: '',
+    },
+    rejectedAt: {
+      type: Date,
+    },
+    rejectionReason: {
+      type: String,
+      default: '',
+      trim: true,
     },
     deletedBy: {
       type: String,

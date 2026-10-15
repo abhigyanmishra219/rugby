@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { 
   CheckCircle, 
   ArrowRight, 
@@ -9,15 +11,39 @@ import {
   Printer, 
   Sparkles, 
   Flame, 
-  Check 
+  Check,
+  AlertCircle,
+  Award,
+  Briefcase,
+  UserCheck,
+  Users
 } from 'lucide-react';
+import rugbyLogo from '@/images/rubgylogo.png';
+import OfficialRegistrationForm, { OfficialType } from '@/components/OfficialRegistrationForm';
 
-export default function RegisterPage() {
-  const roleType = 'PLAYER';
+export type RegistrationRole = 'PLAYER' | 'COACH' | 'MANAGER' | 'REFEREE';
+
+function RegisterPageContent() {
+  const searchParams = useSearchParams();
+  const initialRoleParam = searchParams.get('role') || searchParams.get('type') || 'PLAYER';
+  const validInitialRole: RegistrationRole = ['COACH', 'MANAGER', 'REFEREE'].includes(initialRoleParam.toUpperCase())
+    ? (initialRoleParam.toUpperCase() as RegistrationRole)
+    : 'PLAYER';
+
+  const [roleType, setRoleType] = useState<RegistrationRole>(validInitialRole);
+
+  useEffect(() => {
+    const roleParam = searchParams.get('role') || searchParams.get('type');
+    if (roleParam && ['PLAYER', 'COACH', 'MANAGER', 'REFEREE'].includes(roleParam.toUpperCase())) {
+      setRoleType(roleParam.toUpperCase() as RegistrationRole);
+    }
+  }, [searchParams]);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [generatedId, setGeneratedId] = useState('');
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Form State - Steps 1 & 2 only
   const [formData, setFormData] = useState({
@@ -112,6 +138,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     setIsSubmitting(true);
 
     try {
@@ -126,14 +153,10 @@ export default function RegisterPage() {
         setGeneratedId(result.registration.registrationId);
         setIsCompleted(true);
       } else {
-        const randomId = `RU-${roleType.slice(0, 3)}-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-        setGeneratedId(randomId);
-        setIsCompleted(true);
+        setSubmitError(result.error || result.message || 'Failed to submit player registration. Please try again.');
       }
-    } catch {
-      const randomId = `RU-${roleType.slice(0, 3)}-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-      setGeneratedId(randomId);
-      setIsCompleted(true);
+    } catch (err: any) {
+      setSubmitError(err?.message || 'Network error occurred while connecting to the server. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -149,24 +172,132 @@ export default function RegisterPage() {
     <div className="py-12 sm:py-20 space-y-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <section className="relative rounded-2xl overflow-hidden bg-[#F5F7F5] border border-[#E1E8E3] p-8 sm:p-12 shadow-sm text-center">
-        <div className="max-w-2xl mx-auto space-y-3 relative z-10">
+        <div className="max-w-2xl mx-auto space-y-4 relative z-10 flex flex-col items-center">
+          {/* Official Association Logo */}
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-black border-2 border-[#008F65]/40 shadow-lg overflow-hidden p-1 flex items-center justify-center">
+            <Image
+              src={rugbyLogo}
+              alt="Uttarakhand Rugby Association Official Logo"
+              width={96}
+              height={96}
+              priority
+              className="w-full h-full object-contain rounded-xl"
+            />
+          </div>
+
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded bg-[#EAF7F1] border border-[#008F65]/20 text-[#008F65] text-xs font-black tracking-widest uppercase">
             <Flame className="w-3.5 h-3.5 text-[#FF7900]" />
             <span>OFFICIAL STATE REGISTRATION PORTAL</span>
           </div>
+
           <h1 className="text-3xl sm:text-5xl font-black text-[#17211D] uppercase tracking-tight leading-tight">
-            JOIN <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#008F65] to-[#00B889]">RUGBY UTTARAKHAND</span>
+            JOIN <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#008F65] to-[#00B889]">UTTARAKHAND RUGBY ASSOCIATION</span>
           </h1>
-          <p className="text-sm text-[#5F6B65] font-normal leading-relaxed">
-            Register for the official digital database of Rugby Uttarakhand for eligibility in state trials, sanctioned tournaments, insurance cover, and coaching education.
+
+          <p className="text-sm sm:text-base text-[#5F6B65] font-normal leading-relaxed max-w-xl">
+            Register as a player, coach, manager, or referee with the Uttarakhand Rugby Association.
           </p>
         </div>
       </section>
 
-      {!isCompleted ? (
+      {/* Role Selection Tabs */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-black uppercase tracking-wider text-[#5F6B65]">
+            SELECT REGISTRATION CATEGORY
+          </span>
+          <span className="text-[11px] font-bold text-[#008F65]">
+            4 Official Roles
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {[
+            {
+              id: 'PLAYER' as RegistrationRole,
+              title: 'Player Registration',
+              subtitle: 'State athletes & junior players',
+              icon: Users,
+            },
+            {
+              id: 'COACH' as RegistrationRole,
+              title: 'Coach Registration',
+              subtitle: 'Technical coaches & trainers',
+              icon: Award,
+            },
+            {
+              id: 'MANAGER' as RegistrationRole,
+              title: 'Manager Registration',
+              subtitle: 'Club & team administrators',
+              icon: Briefcase,
+            },
+            {
+              id: 'REFEREE' as RegistrationRole,
+              title: 'Referee Registration',
+              subtitle: 'Match officials & adjudicators',
+              icon: UserCheck,
+            },
+          ].map((role) => {
+            const Icon = role.icon;
+            const isSelected = roleType === role.id;
+            return (
+              <button
+                key={role.id}
+                type="button"
+                onClick={() => setRoleType(role.id)}
+                className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  isSelected
+                    ? 'bg-[#EAF7F1] border-[#008F65] shadow-xs ring-2 ring-[#008F65]/20'
+                    : 'bg-white border-[#E1E8E3] hover:border-[#008F65]/40 hover:bg-[#FAFBF9]'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                      isSelected
+                        ? 'bg-[#008F65] text-white'
+                        : 'bg-[#F5F7F5] text-[#5F6B65]'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  {isSelected && (
+                    <span className="w-2 h-2 rounded-full bg-[#008F65]" />
+                  )}
+                </div>
+                <div>
+                  <h3
+                    className={`text-xs sm:text-sm font-black uppercase tracking-wide leading-tight ${
+                      isSelected ? 'text-[#008F65]' : 'text-[#17211D]'
+                    }`}
+                  >
+                    {role.title}
+                  </h3>
+                  <p className="text-[11px] text-[#5F6B65] mt-0.5 line-clamp-1">
+                    {role.subtitle}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Role Form Rendering */}
+      {roleType !== 'PLAYER' ? (
+        <OfficialRegistrationForm roleType={roleType} onSelectRole={setRoleType} />
+      ) : !isCompleted ? (
         <div className="space-y-8">
           {/* Stepper Wizard Indicator - 3 Steps */}
           <div className="p-4 rounded-xl bg-white border border-[#E1E8E3] shadow-xs">
+            <div className="text-center pb-3 border-b border-[#E1E8E3] mb-4">
+              <h2 className="text-xl sm:text-2xl font-black text-[#17211D] uppercase tracking-tight">
+                PLAYER REGISTRATION
+              </h2>
+              <p className="text-xs text-[#5F6B65] mt-0.5">
+                Uttarakhand Rugby Association official player enrollment form.
+              </p>
+            </div>
             <div className="flex items-center justify-between max-w-xl mx-auto text-xs font-bold uppercase">
               {[
                 { step: 1, label: 'Player Details' },
@@ -196,6 +327,13 @@ export default function RegisterPage() {
 
           {/* Registration Form Card */}
           <form onSubmit={handleSubmit} className="p-6 sm:p-10 rounded-2xl bg-white border border-[#E1E8E3] shadow-xs space-y-6">
+            {submitError && (
+              <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <span>{submitError}</span>
+              </div>
+            )}
+
             {/* Step 1: Personal Info */}
             {currentStep === 1 && (
               <div className="space-y-4">
@@ -473,13 +611,13 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-8 py-3 rounded-lg bg-[#008F65] hover:bg-[#007553] text-white font-black text-xs uppercase flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+                  className="px-8 py-3 rounded-lg bg-[#008F65] hover:bg-[#007553] text-white font-black text-xs uppercase flex items-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
-                    <span>Registering with State Federation...</span>
+                    <span>Submitting Player Registration...</span>
                   ) : (
                     <>
-                      <span>SUBMIT & GENERATE ID</span>
+                      <span>SUBMIT PLAYER REGISTRATION</span>
                       <Sparkles className="w-4 h-4 text-white" />
                     </>
                   )}
@@ -489,43 +627,54 @@ export default function RegisterPage() {
           </form>
         </div>
       ) : (
-        /* Instant Success Digital ID Card Generation */
+        /* Successful Submission Message & Pending Review Acknowledgment */
         <div className="rounded-2xl bg-white border border-[#E1E8E3] p-8 sm:p-12 shadow-sm text-center space-y-6 animate-in zoom-in-95 duration-300">
           <div className="w-16 h-16 rounded-full bg-[#EAF7F1] border border-[#008F65]/30 text-[#008F65] flex items-center justify-center mx-auto">
             <CheckCircle className="w-8 h-8" />
           </div>
 
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#FF7900] block mb-1">
-              REGISTRATION APPROVED & VERIFIED
+          <div className="max-w-2xl mx-auto space-y-2">
+            <span className="text-[11px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full inline-block">
+              REGISTRATION SUBMITTED • AWAITING REVIEW
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-[#17211D] uppercase tracking-tight">
-              WELCOME TO RUGBY UTTARAKHAND
+              PLAYER REGISTRATION RECEIVED
             </h2>
-            <p className="text-xs sm:text-sm text-[#5F6B65] mt-2 max-w-xl mx-auto">
-              Your official state registration has been generated. You are now officially enrolled in the Uttarakhand State Rugby talent network for season 2026-27.
+            <p className="text-sm sm:text-base text-[#17211D] font-medium mt-3 leading-relaxed">
+              Your player registration has been submitted successfully to the Uttarakhand Rugby Association. Your registration will be reviewed by the association.
+            </p>
+            <p className="text-xs text-[#5F6B65] leading-relaxed">
+              Your player record is currently awaiting administrative review and approval. An administrator from Uttarakhand Rugby Association will review your application.
             </p>
           </div>
 
-          {/* Digital Athlete ID Badge */}
+          {/* Digital Athlete ID Acknowledgment Badge */}
           <div className="max-w-md mx-auto rounded-xl bg-gradient-to-br from-[#EAF7F1] via-white to-[#F5F7F5] border-2 border-[#008F65] p-6 shadow-md text-left space-y-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#008F65]/10 rounded-full blur-2xl pointer-events-none" />
 
             <div className="flex items-center justify-between border-b border-[#E1E8E3] pb-3">
-              <div className="flex items-center space-x-2">
-                <Shield className="w-5 h-5 text-[#008F65]" />
-                <span className="text-xs font-black text-[#17211D] uppercase">RUGBY UTTARAKHAND</span>
+              <div className="flex items-center space-x-2.5">
+                <div className="w-7 h-7 rounded bg-black p-0.5 border border-[#008F65]/30 overflow-hidden flex items-center justify-center shrink-0">
+                  <Image
+                    src={rugbyLogo}
+                    alt="Uttarakhand Rugby Association Logo"
+                    width={28}
+                    height={28}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <span className="text-xs font-black text-[#17211D] uppercase">UTTARAKHAND RUGBY ASSOCIATION</span>
               </div>
               <span className="text-[10px] font-mono text-[#FF7900] font-bold">{generatedId}</span>
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 rounded-lg bg-[#008F65] flex items-center justify-center text-white font-black text-xl shadow-xs">
+              <div className="w-16 h-16 rounded-lg bg-[#008F65] flex items-center justify-center text-white font-black text-xl shadow-xs shrink-0">
                 {formData.fullName ? formData.fullName.charAt(0) : 'U'}
               </div>
               <div>
                 <h4 className="text-lg font-black text-[#17211D] uppercase leading-snug">
-                  {formData.fullName || 'Registered Athlete'}
+                  {formData.fullName || 'Registered Player'}
                 </h4>
                 {formData.fatherName && (
                   <div className="text-xs text-[#5F6B65]">
@@ -533,7 +682,7 @@ export default function RegisterPage() {
                   </div>
                 )}
                 <div className="text-xs text-[#008F65] font-semibold mt-0.5">
-                  {roleType} • STATE ATHLETE
+                  PLAYER REGISTRATION • PENDING REVIEW
                 </div>
                 <div className="text-[11px] text-[#5F6B65]">
                   {formData.district} District
@@ -552,8 +701,8 @@ export default function RegisterPage() {
                 <span className="text-[#17211D] font-bold truncate block">{formData.district ? `${formData.district} District Squad` : 'State Pool'}</span>
               </div>
               <div>
-                <span className="text-[#5F6B65] uppercase block">Valid Through:</span>
-                <span className="text-[#008F65] font-bold">2027 Season</span>
+                <span className="text-[#5F6B65] uppercase block">Status:</span>
+                <span className="text-amber-700 font-bold">Awaiting Review</span>
               </div>
             </div>
           </div>
@@ -565,7 +714,7 @@ export default function RegisterPage() {
               className="px-6 py-3 rounded-lg bg-[#008F65] hover:bg-[#007553] text-white font-bold text-xs uppercase flex items-center space-x-2 shadow-xs cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>PRINT DIGITAL ID CARD</span>
+              <span>PRINT REGISTRATION SLIP</span>
             </button>
 
             <button
@@ -581,6 +730,7 @@ export default function RegisterPage() {
                   address: '',
                   emergencyContact: '',
                 });
+                setSubmitError(null);
                 setIsCompleted(false);
                 setCurrentStep(1);
               }}
@@ -594,3 +744,21 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-3">
+          <div className="w-8 h-8 border-4 border-[#008F65]/20 border-t-[#008F65] rounded-full animate-spin" />
+          <p className="text-xs font-bold text-[#5F6B65] uppercase tracking-wider">
+            Loading registration portal...
+          </p>
+        </div>
+      }
+    >
+      <RegisterPageContent />
+    </Suspense>
+  );
+}
+

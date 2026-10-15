@@ -14,14 +14,14 @@ export const socialMediaLinks = [
   {
     name: 'Instagram',
     href: 'https://www.instagram.com/uttarakhand_rugby?utm_source=qr',
-    ariaLabel: 'Follow Uttarakhand Rugby on Instagram (opens in a new tab)',
+    ariaLabel: 'Follow Uttarakhand Rugby Association on Instagram (opens in a new tab)',
     icon: FaInstagram,
     hoverClasses: 'hover:bg-gradient-to-tr hover:from-[#f09433] hover:via-[#dc2743] hover:to-[#bc1888] hover:border-transparent hover:shadow-lg hover:shadow-pink-900/40',
   },
   {
     name: 'Facebook',
     href: 'https://www.facebook.com/share/1D1aaoKXs1/?mibextid=wwXIfr',
-    ariaLabel: 'Connect with Uttarakhand Rugby on Facebook (opens in a new tab)',
+    ariaLabel: 'Connect with Uttarakhand Rugby Association on Facebook (opens in a new tab)',
     icon: FaFacebookF,
     hoverClasses: 'hover:bg-[#1877F2] hover:border-[#1877F2] hover:shadow-lg hover:shadow-blue-900/40',
   },

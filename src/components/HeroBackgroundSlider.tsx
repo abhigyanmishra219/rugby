@@ -21,7 +21,7 @@ const HERO_SLIDES: Slide[] = [
   {
     id: 'slide-kotdwar-squad',
     image: imgKotdwarSquad,
-    alt: 'Rugby Uttarakhand state squad and coaching staff on pitch at Kotdwar',
+    alt: 'Uttarakhand Rugby Association state squad and coaching staff on pitch at Kotdwar',
     objectPosition: 'center 40%',
   },
   {

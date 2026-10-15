@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        message: 'Player registered successfully in MongoDB Atlas',
+        message: 'Your player registration has been submitted successfully to the Uttarakhand Rugby Association. Your registration will be reviewed by the association.',
         registration: newRegistration,
       },
       { status: 201 }

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
   Menu, 
@@ -18,6 +19,7 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
+import rugbyLogo from '@/images/rubgylogo.png';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -56,16 +58,19 @@ export default function Navbar() {
           <div className="flex items-center justify-between">
             {/* Logo & Brand Identity */}
             <a href="/" className="flex items-center space-x-3 group">
-              <div className="relative w-11 h-11 rounded-lg bg-gradient-to-br from-[#008F65] via-[#006e4e] to-[#041a0f] p-0.5 shadow-md flex items-center justify-center transform group-hover:scale-105 transition-transform">
-                <div className="w-full h-full bg-[#071710] rounded-[7px] flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-[#008F65]/30 to-[#FF7900]/20 opacity-70"></div>
-                  {/* Mountain peak + Rugby ball icon design */}
-                  <Shield className="w-6 h-6 text-[#00B889] group-hover:text-[#FF7900] transition-colors" />
-                </div>
+              <div className="relative w-11 h-11 rounded-lg bg-black p-0.5 shadow-md flex items-center justify-center transform group-hover:scale-105 transition-transform overflow-hidden border border-[#008F65]/30 shrink-0">
+                <Image
+                  src={rugbyLogo}
+                  alt="Uttarakhand Rugby Association Logo"
+                  width={44}
+                  height={44}
+                  priority
+                  className="w-full h-full object-contain rounded-[6px]"
+                />
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-lg sm:text-xl tracking-tight text-[#17211D] leading-none flex items-center gap-1.5">
-                  RUGBY <span className="text-[#008F65]">UTTARAKHAND</span>
+                <span className="font-extrabold text-base sm:text-lg tracking-tight text-[#17211D] leading-none flex items-center gap-1.5">
+                  UTTARAKHAND <span className="text-[#008F65]">RUGBY ASSOCIATION</span>
                 </span>
                 <span className="text-[10px] tracking-widest text-[#5F6B65] uppercase font-semibold mt-0.5">
                   State Governing Body • Devbhoomi
@@ -149,7 +154,7 @@ export default function Navbar() {
                 href="/register"
                 className="bg-[#008F65] hover:bg-[#007553] text-white text-[11px] font-black uppercase px-3 py-1.5 rounded tracking-wider flex items-center"
               >
-                REGISTER
+                JOIN RUGBY
               </a>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -169,12 +174,18 @@ export default function Navbar() {
           <div>
             <div className="flex items-center justify-between pb-6 border-b border-[#E1E8E3]">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-[#008F65] flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 rounded-lg bg-black border border-[#008F65]/30 flex items-center justify-center overflow-hidden p-0.5 shrink-0">
+                  <Image
+                    src={rugbyLogo}
+                    alt="Uttarakhand Rugby Association Logo"
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-contain rounded-[6px]"
+                  />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-[#17211D] text-lg leading-none">RUGBY UTTARAKHAND</h3>
-                  <p className="text-[10px] text-[#008F65] uppercase tracking-widest mt-1">Official State Association</p>
+                  <h3 className="font-extrabold text-[#17211D] text-base leading-tight">UTTARAKHAND RUGBY ASSOCIATION</h3>
+                  <p className="text-[10px] text-[#008F65] uppercase tracking-widest mt-0.5">Official State Association</p>
                 </div>
               </div>
               <button
@@ -214,11 +225,11 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className="w-full py-3.5 bg-[#008F65] hover:bg-[#007553] text-white text-center font-black uppercase text-sm tracking-wider rounded-lg shadow-md flex items-center justify-center space-x-2"
             >
-              <span>REGISTER / JOIN RUGBY</span>
+              <span>JOIN RUGBY</span>
               <ChevronRight className="w-4 h-4" />
             </a>
             <p className="text-center text-xs text-[#5F6B65]">
-              © Rugby Uttarakhand. Official State Sports Organization.
+              © {new Date().getFullYear()} Uttarakhand Rugby Association. Official State Sports Organization.
             </p>
           </div>
         </div>

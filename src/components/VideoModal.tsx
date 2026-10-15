@@ -53,7 +53,7 @@ export default function VideoModal({ isOpen, videoTitle, onClose }: VideoModalPr
             </div>
             <div className="inline-flex items-center space-x-2 text-xs text-[#FF7900] bg-black/60 px-3 py-1 rounded border border-white/20">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-              <span>HD 1080p • Rugby Uttarakhand Broadcast Archive</span>
+              <span>HD 1080p • Uttarakhand Rugby Association Broadcast Archive</span>
             </div>
           </div>
         </div>

@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 import { Shield, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import rugbyLogo from '@/images/rubgylogo.png';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -44,9 +46,19 @@ export default function SignInPage() {
 
       <div className="max-w-md w-full space-y-8 relative z-10">
         {/* Header & Logo */}
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-3 flex flex-col items-center">
+          <div className="w-14 h-14 rounded-xl bg-black border border-[#008F65]/30 p-0.5 shadow-md overflow-hidden flex items-center justify-center">
+            <Image
+              src={rugbyLogo}
+              alt="Uttarakhand Rugby Association Logo"
+              width={56}
+              height={56}
+              priority
+              className="w-full h-full object-contain rounded-lg"
+            />
+          </div>
+
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#EAF7F1] border border-[#008F65]/20 text-[#008F65] text-xs font-black tracking-widest uppercase">
-            <Shield className="w-3.5 h-3.5 text-[#FF7900]" />
             <span>MEMBER PORTAL</span>
           </div>
 
@@ -54,7 +66,7 @@ export default function SignInPage() {
             SIGN <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#008F65] to-[#00B889]">IN</span>
           </h2>
           <p className="text-xs sm:text-sm text-[#5F6B65] max-w-sm mx-auto">
-            Access your official Rugby Association of Uttarakhand account and dashboard.
+            Access your official Uttarakhand Rugby Association account and dashboard.
           </p>
         </div>
 

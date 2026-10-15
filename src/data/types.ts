@@ -18,7 +18,7 @@ export interface Competition {
   id: string;
   name: string;
   subtitle: string;
-  category: 'Senior Men' | 'Senior Women' | 'U20 Men' | 'U20 Women' | 'U18 Boys' | 'U18 Girls' | 'Open Inter-District';
+  category: 'Senior Men' | 'Senior Women' | 'U20 Men' | 'U20 Women' | 'U18 Boys' | 'U18 Girls' | 'U15 & U18' | 'Open Inter-District';
   format: 'Rugby 7s' | 'Rugby XVs' | 'Touch Rugby';
   startDate: string;
   endDate: string;

@@ -32,7 +32,12 @@ import {
   Lock,
   ShieldCheck,
   UserCheck,
+  Award,
+  Briefcase,
 } from 'lucide-react';
+import OfficialTable from '@/components/OfficialTable';
+import OfficialDetailsModal, { OfficialRecordDetail } from '@/components/OfficialDetailsModal';
+import RejectionModal from '@/components/RejectionModal';
 
 interface PlayerRecord {
   _id: string;
@@ -50,6 +55,10 @@ interface PlayerRecord {
   approvedBy?: string;
   approvedById?: string;
   approvedAt?: string;
+  rejectedBy?: string;
+  rejectedById?: string;
+  rejectedAt?: string;
+  rejectionReason?: string;
   deletedBy?: string;
   deletedById?: string;
   deletedAt?: string;
@@ -62,6 +71,14 @@ interface DashboardCounts {
   pending: number;
   approved: number;
   deleted: number;
+}
+
+export interface AllDashboardCounts {
+  players: { approved: number; pending: number; deleted: number; total: number };
+  coaches: { approved: number; pending: number };
+  managers: { approved: number; pending: number };
+  referees: { approved: number; pending: number };
+  admins: { total: number };
 }
 
 interface AdminUserRecord {
@@ -82,14 +99,24 @@ interface AdminCounts {
   createdByMe: number;
 }
 
-type TabType = 'APPROVED' | 'PENDING' | 'DELETED' | 'ADMINS';
+export type TabType =
+  | 'APPROVED_PLAYERS'
+  | 'PENDING_PLAYERS'
+  | 'APPROVED_COACHES'
+  | 'PENDING_COACHES'
+  | 'APPROVED_MANAGERS'
+  | 'PENDING_MANAGERS'
+  | 'APPROVED_REFEREES'
+  | 'PENDING_REFEREES'
+  | 'DELETED_PLAYERS'
+  | 'ADMINS';
 
 export default function AdminDashboardPage() {
   const { user, token, isLoading: isAuthLoading, logout } = useUser();
   const router = useRouter();
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState<TabType>('APPROVED');
+  const [activeTab, setActiveTab] = useState<TabType>('APPROVED_PLAYERS');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -102,6 +129,25 @@ export default function AdminDashboardPage() {
   const [totalMatching, setTotalMatching] = useState(0);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Officials Data state (Coach, Manager, Referee)
+  const [officials, setOfficials] = useState<OfficialRecordDetail[]>([]);
+  const [selectedOfficial, setSelectedOfficial] = useState<OfficialRecordDetail | null>(null);
+  const [rejectModalItem, setRejectModalItem] = useState<{
+    id: string;
+    name: string;
+    role: 'PLAYER' | 'COACH' | 'MANAGER' | 'REFEREE';
+    registrationId: string;
+  } | null>(null);
+
+  // Global counts across all 10 tabs
+  const [allCounts, setAllCounts] = useState<AllDashboardCounts>({
+    players: { approved: 0, pending: 0, deleted: 0, total: 0 },
+    coaches: { approved: 0, pending: 0 },
+    managers: { approved: 0, pending: 0 },
+    referees: { approved: 0, pending: 0 },
+    admins: { total: 0 },
+  });
 
   // Admin Management Data state
   const [adminUsers, setAdminUsers] = useState<AdminUserRecord[]>([]);
@@ -147,7 +193,7 @@ export default function AdminDashboardPage() {
     }
   }, [user, isAuthLoading, router]);
 
-  // Debounce search input for players
+  // Debounce search input for players and officials
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -186,18 +232,115 @@ export default function AdminDashboardPage() {
     return headers;
   }, [token]);
 
-  // Fetch registrations from API
-  const fetchRegistrations = useCallback(
+  const isOfficialTab = (tab: TabType) => {
+    return [
+      'APPROVED_COACHES',
+      'PENDING_COACHES',
+      'APPROVED_MANAGERS',
+      'PENDING_MANAGERS',
+      'APPROVED_REFEREES',
+      'PENDING_REFEREES',
+    ].includes(tab);
+  };
+
+  const getOfficialTypeAndStatus = (tab: TabType): { type: 'COACH' | 'MANAGER' | 'REFEREE'; status: 'APPROVED' | 'PENDING' } => {
+    switch (tab) {
+      case 'APPROVED_COACHES': return { type: 'COACH', status: 'APPROVED' };
+      case 'PENDING_COACHES': return { type: 'COACH', status: 'PENDING' };
+      case 'APPROVED_MANAGERS': return { type: 'MANAGER', status: 'APPROVED' };
+      case 'PENDING_MANAGERS': return { type: 'MANAGER', status: 'PENDING' };
+      case 'APPROVED_REFEREES': return { type: 'REFEREE', status: 'APPROVED' };
+      case 'PENDING_REFEREES': return { type: 'REFEREE', status: 'PENDING' };
+      default: return { type: 'COACH', status: 'APPROVED' };
+    }
+  };
+
+  const getPlayerStatus = (tab: TabType): 'APPROVED' | 'PENDING' | 'DELETED' => {
+    if (tab === 'PENDING_PLAYERS') return 'PENDING';
+    if (tab === 'DELETED_PLAYERS') return 'DELETED';
+    return 'APPROVED';
+  };
+
+  // Fetch all counts across tabs
+  const fetchAllCounts = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await fetch('/api/admin/counts', { headers: getAuthHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.counts) {
+          setAllCounts(data.counts);
+          setCounts({
+            total: data.counts.players.total,
+            pending: data.counts.players.pending,
+            approved: data.counts.players.approved,
+            deleted: data.counts.players.deleted,
+          });
+          setAdminCounts((prev) => ({ ...prev, total: data.counts.admins.total }));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch admin counts:', err);
+    }
+  }, [user, getAuthHeaders]);
+
+  // Fetch official registrations (Coach, Manager, Referee)
+  const fetchOfficials = useCallback(
     async (showLoadingSpinner = true) => {
       if (!user) return;
-      if (activeTab === 'ADMINS') return;
+      const { type, status } = getOfficialTypeAndStatus(activeTab);
 
       if (showLoadingSpinner) setIsLoadingData(true);
       else setIsRefreshing(true);
 
       try {
         const queryParams = new URLSearchParams({
-          status: activeTab,
+          type,
+          status,
+          search: debouncedSearch,
+          page: currentPage.toString(),
+          limit: pageSize.toString(),
+        });
+
+        const res = await fetch(`/api/admin/officials?${queryParams.toString()}`, {
+          headers: getAuthHeaders(),
+        });
+
+        if (res.status === 401) {
+          router.replace('/signin');
+          return;
+        }
+
+        const data = await res.json();
+        if (data.success) {
+          setOfficials(data.officials || []);
+          setTotalPages(data.pagination?.totalPages || 1);
+          setTotalMatching(data.pagination?.total || 0);
+        } else {
+          setNotification({ type: 'error', message: data.message || 'Failed to load official registrations.' });
+        }
+      } catch (err: any) {
+        setNotification({ type: 'error', message: err.message || 'Error connecting to database.' });
+      } finally {
+        setIsLoadingData(false);
+        setIsRefreshing(false);
+      }
+    },
+    [user, activeTab, debouncedSearch, currentPage, pageSize, getAuthHeaders, router]
+  );
+
+  // Fetch registrations from API
+  const fetchRegistrations = useCallback(
+    async (showLoadingSpinner = true) => {
+      if (!user) return;
+      const playerStatus = getPlayerStatus(activeTab);
+
+      if (showLoadingSpinner) setIsLoadingData(true);
+      else setIsRefreshing(true);
+
+      try {
+        const queryParams = new URLSearchParams({
+          status: playerStatus,
           search: debouncedSearch,
           page: currentPage.toString(),
           limit: pageSize.toString(),
@@ -269,25 +412,27 @@ export default function AdminDashboardPage() {
     [user, debouncedAdminSearch, getAuthHeaders, router]
   );
 
-  // Initial load: Fetch registrations and admin counts
+  // Master fetch router
+  const fetchCurrentData = useCallback(
+    async (showLoadingSpinner = true) => {
+      if (activeTab === 'ADMINS') {
+        await fetchAdminAccounts(showLoadingSpinner);
+      } else if (isOfficialTab(activeTab)) {
+        await fetchOfficials(showLoadingSpinner);
+      } else {
+        await fetchRegistrations(showLoadingSpinner);
+      }
+    },
+    [activeTab, fetchAdminAccounts, fetchOfficials, fetchRegistrations]
+  );
+
+  // Initial and reactive load: Fetch data and global counts
   useEffect(() => {
     if (user) {
-      if (activeTab === 'ADMINS') {
-        fetchAdminAccounts();
-      } else {
-        fetchRegistrations();
-      }
-      // Also fetch admin counts to display accurate tab badge
-      fetch('/api/admin/users', { headers: getAuthHeaders() })
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.success && d.counts) {
-            setAdminCounts(d.counts);
-          }
-        })
-        .catch(() => {});
+      fetchCurrentData(true);
+      fetchAllCounts();
     }
-  }, [fetchRegistrations, fetchAdminAccounts, activeTab, user, getAuthHeaders]);
+  }, [user, activeTab, debouncedSearch, debouncedAdminSearch, currentPage, fetchCurrentData, fetchAllCounts]);
 
   // Handle Approve Player
   const handleApprove = async (player: PlayerRecord) => {
@@ -304,18 +449,91 @@ export default function AdminDashboardPage() {
           type: 'success',
           message: `Player ${player.fullName} (${player.registrationId}) approved successfully!`,
         });
-        await fetchRegistrations(false);
+        await Promise.all([fetchCurrentData(false), fetchAllCounts()]);
       } else {
         setNotification({
           type: 'error',
           message: data.message || 'Failed to approve player.',
         });
-        await fetchRegistrations(false);
+        await fetchCurrentData(false);
       }
     } catch (err: any) {
       setNotification({
         type: 'error',
         message: err.message || 'Failed to approve player.',
+      });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Handle Approve Official (Coach, Manager, Referee)
+  const handleApproveOfficial = async (id: string, name: string) => {
+    setProcessingId(id);
+    try {
+      const res = await fetch(`/api/admin/officials/${id}/approve`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNotification({
+          type: 'success',
+          message: data.message || `Official ${name} approved successfully!`,
+        });
+        await Promise.all([fetchCurrentData(false), fetchAllCounts()]);
+      } else {
+        setNotification({
+          type: 'error',
+          message: data.message || 'Failed to approve official registration.',
+        });
+        await fetchCurrentData(false);
+      }
+    } catch (err: any) {
+      setNotification({
+        type: 'error',
+        message: err.message || 'Failed to approve official.',
+      });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Handle Confirm Rejection (Player or Official)
+  const handleConfirmRejection = async (reason: string) => {
+    if (!rejectModalItem) return;
+    setProcessingId(rejectModalItem.id);
+
+    try {
+      const endpoint = rejectModalItem.role === 'PLAYER'
+        ? `/api/admin/registrations/${rejectModalItem.id}/reject`
+        : `/api/admin/officials/${rejectModalItem.id}/reject`;
+
+      const res = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ rejectionReason: reason }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNotification({
+          type: 'success',
+          message: data.message || `${rejectModalItem.role} ${rejectModalItem.name} rejected.`,
+        });
+        setRejectModalItem(null);
+        await Promise.all([fetchCurrentData(false), fetchAllCounts()]);
+      } else {
+        setNotification({
+          type: 'error',
+          message: data.message || 'Failed to reject registration.',
+        });
+      }
+    } catch (err: any) {
+      setNotification({
+        type: 'error',
+        message: err.message || 'Error occurred while rejecting registration.',
       });
     } finally {
       setProcessingId(null);
@@ -513,6 +731,21 @@ export default function AdminDashboardPage() {
     setSearchQuery('');
   };
 
+  const getTabTitle = (tab: TabType): string => {
+    switch (tab) {
+      case 'APPROVED_PLAYERS': return 'Approved Players';
+      case 'PENDING_PLAYERS': return 'Pending Player Approvals';
+      case 'APPROVED_COACHES': return 'Approved Coaches';
+      case 'PENDING_COACHES': return 'Pending Coach Approvals';
+      case 'APPROVED_MANAGERS': return 'Approved Managers';
+      case 'PENDING_MANAGERS': return 'Pending Manager Approvals';
+      case 'APPROVED_REFEREES': return 'Approved Referees';
+      case 'PENDING_REFEREES': return 'Pending Referee Approvals';
+      case 'DELETED_PLAYERS': return 'Deleted Players';
+      case 'ADMINS': return 'Admin Management';
+    }
+  };
+
   // Format dates
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '—';
@@ -612,11 +845,17 @@ export default function AdminDashboardPage() {
               <span>OFFICIAL FEDERATION REGISTRY</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#17211D] uppercase tracking-tight">
-              {activeTab === 'ADMINS' ? 'Administrator Account Management' : 'Player Registry Management'}
+              {activeTab === 'ADMINS'
+                ? 'Administrator Account Management'
+                : isOfficialTab(activeTab)
+                ? `${getOfficialTypeAndStatus(activeTab).type} Registry Management`
+                : 'Player Registry Management'}
             </h1>
             <p className="text-xs sm:text-sm text-[#5F6B65] max-w-2xl">
               {activeTab === 'ADMINS'
                 ? 'Create, inspect, and manage authorized administrative accounts with role-based access control.'
+                : isOfficialTab(activeTab)
+                ? `Review, approve, reject, and inspect ${getOfficialTypeAndStatus(activeTab).type.toLowerCase()} registration applications with declared qualification levels.`
                 : 'Review registrations, approve players, and manage the official player registry.'}
             </p>
           </div>
@@ -650,101 +889,128 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Player Registry Summary Cards (Shown on Player tabs) */}
+        {/* Category Summary Cards */}
         {activeTab !== 'ADMINS' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Card: Total Registrations */}
+            {/* Card 1: Players */}
             <div className="bg-white rounded-xl border border-[#E1E8E3] p-5 shadow-xs hover:border-[#008F65]/40 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-[#5F6B65] tracking-wider">
-                  Total Registrations
+                  Player Registrations
                 </span>
                 <div className="w-9 h-9 rounded-lg bg-[#EAF7F1] text-[#008F65] flex items-center justify-center">
                   <Shield className="w-4 h-4" />
                 </div>
               </div>
-              <div className="mt-3 text-3xl font-black text-[#17211D]">
-                {counts.total}
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-3xl font-black text-[#008F65]">{allCounts.players.approved}</span>
+                <span className="text-xs font-bold text-[#5F6B65] uppercase">Approved</span>
               </div>
-              <p className="mt-1 text-[11px] text-[#5F6B65]">
-                Active pending & approved state players
-              </p>
+              <div className="mt-3 pt-3 border-t border-[#E1E8E3] flex items-center justify-between text-xs">
+                <button
+                  onClick={() => handleTabChange('PENDING_PLAYERS')}
+                  className="font-bold text-[#FF7900] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>{allCounts.players.pending} Pending</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('DELETED_PLAYERS')}
+                  className="text-[#5F6B65] hover:text-rose-600 font-semibold cursor-pointer"
+                >
+                  <span>{allCounts.players.deleted} Archived</span>
+                </button>
+              </div>
             </div>
 
-            {/* Card: Approved Players */}
-            <button
-              onClick={() => handleTabChange('APPROVED')}
-              className={`text-left bg-white rounded-xl border p-5 shadow-xs transition-all cursor-pointer ${
-                activeTab === 'APPROVED'
-                  ? 'border-[#008F65] ring-2 ring-[#008F65]/20 bg-[#F5FCF8]'
-                  : 'border-[#E1E8E3] hover:border-[#008F65]/40'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase text-[#008F65] tracking-wider">
-                  Approved Players
-                </span>
-                <div className="w-9 h-9 rounded-lg bg-[#EAF7F1] text-[#008F65] flex items-center justify-center">
-                  <CheckCircle className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3 text-3xl font-black text-[#008F65]">
-                {counts.approved}
-              </div>
-              <p className="mt-1 text-[11px] text-[#5F6B65]">
-                Verified & issued official digital athlete IDs
-              </p>
-            </button>
-
-            {/* Card: Pending Approvals */}
-            <button
-              onClick={() => handleTabChange('PENDING')}
-              className={`text-left bg-white rounded-xl border p-5 shadow-xs transition-all cursor-pointer ${
-                activeTab === 'PENDING'
-                  ? 'border-[#FF7900] ring-2 ring-[#FF7900]/20 bg-[#FFFBF7]'
-                  : 'border-[#E1E8E3] hover:border-[#FF7900]/40'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase text-[#FF7900] tracking-wider">
-                  Pending Approvals
-                </span>
-                <div className="w-9 h-9 rounded-lg bg-amber-50 text-[#FF7900] flex items-center justify-center">
-                  <Clock className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3 text-3xl font-black text-[#FF7900]">
-                {counts.pending}
-              </div>
-              <p className="mt-1 text-[11px] text-[#5F6B65]">
-                Awaiting admin review & validation
-              </p>
-            </button>
-
-            {/* Card: Deleted Players */}
-            <button
-              onClick={() => handleTabChange('DELETED')}
-              className={`text-left bg-white rounded-xl border p-5 shadow-xs transition-all cursor-pointer ${
-                activeTab === 'DELETED'
-                  ? 'border-rose-400 ring-2 ring-rose-300/20 bg-rose-50/30'
-                  : 'border-[#E1E8E3] hover:border-rose-300'
-              }`}
-            >
+            {/* Card 2: Coaches */}
+            <div className="bg-white rounded-xl border border-[#E1E8E3] p-5 shadow-xs hover:border-[#008F65]/40 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-[#5F6B65] tracking-wider">
-                  Deleted Players
+                  Coach Registrations
                 </span>
-                <div className="w-9 h-9 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-                  <Trash2 className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-lg bg-[#EAF7F1] text-[#008F65] flex items-center justify-center">
+                  <Award className="w-4 h-4" />
                 </div>
               </div>
-              <div className="mt-3 text-3xl font-black text-[#17211D]">
-                {counts.deleted}
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-3xl font-black text-[#008F65]">{allCounts.coaches.approved}</span>
+                <span className="text-xs font-bold text-[#5F6B65] uppercase">Approved</span>
               </div>
-              <p className="mt-1 text-[11px] text-[#5F6B65]">
-                Archived records with restore option
-              </p>
-            </button>
+              <div className="mt-3 pt-3 border-t border-[#E1E8E3] flex items-center justify-between text-xs">
+                <button
+                  onClick={() => handleTabChange('PENDING_COACHES')}
+                  className="font-bold text-[#FF7900] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>{allCounts.coaches.pending} Pending</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('APPROVED_COACHES')}
+                  className="text-[#008F65] hover:underline font-semibold cursor-pointer"
+                >
+                  <span>View Registry →</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 3: Managers */}
+            <div className="bg-white rounded-xl border border-[#E1E8E3] p-5 shadow-xs hover:border-[#008F65]/40 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase text-[#5F6B65] tracking-wider">
+                  Manager Registrations
+                </span>
+                <div className="w-9 h-9 rounded-lg bg-[#EAF7F1] text-[#008F65] flex items-center justify-center">
+                  <Briefcase className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-3xl font-black text-[#008F65]">{allCounts.managers.approved}</span>
+                <span className="text-xs font-bold text-[#5F6B65] uppercase">Approved</span>
+              </div>
+              <div className="mt-3 pt-3 border-t border-[#E1E8E3] flex items-center justify-between text-xs">
+                <button
+                  onClick={() => handleTabChange('PENDING_MANAGERS')}
+                  className="font-bold text-[#FF7900] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>{allCounts.managers.pending} Pending</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('APPROVED_MANAGERS')}
+                  className="text-[#008F65] hover:underline font-semibold cursor-pointer"
+                >
+                  <span>View Registry →</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 4: Referees */}
+            <div className="bg-white rounded-xl border border-[#E1E8E3] p-5 shadow-xs hover:border-[#008F65]/40 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase text-[#5F6B65] tracking-wider">
+                  Referee Registrations
+                </span>
+                <div className="w-9 h-9 rounded-lg bg-[#EAF7F1] text-[#008F65] flex items-center justify-center">
+                  <UserCheck className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="text-3xl font-black text-[#008F65]">{allCounts.referees.approved}</span>
+                <span className="text-xs font-bold text-[#5F6B65] uppercase">Approved</span>
+              </div>
+              <div className="mt-3 pt-3 border-t border-[#E1E8E3] flex items-center justify-between text-xs">
+                <button
+                  onClick={() => handleTabChange('PENDING_REFEREES')}
+                  className="font-bold text-[#FF7900] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>{allCounts.referees.pending} Pending</span>
+                </button>
+                <button
+                  onClick={() => handleTabChange('APPROVED_REFEREES')}
+                  className="text-[#008F65] hover:underline font-semibold cursor-pointer"
+                >
+                  <span>View Registry →</span>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -755,77 +1021,200 @@ export default function AdminDashboardPage() {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               
               {/* Tab Navigation Buttons */}
-              <div className="flex flex-wrap items-center gap-2 p-1 bg-[#F5F7F5] rounded-xl border border-[#E1E8E3]">
+              <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-[#F5F7F5] rounded-xl border border-[#E1E8E3]">
+                {/* 1. Approved Players */}
                 <button
-                  onClick={() => handleTabChange('APPROVED')}
-                  className={`px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-2 cursor-pointer ${
-                    activeTab === 'APPROVED'
+                  onClick={() => handleTabChange('APPROVED_PLAYERS')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+                    activeTab === 'APPROVED_PLAYERS'
                       ? 'bg-[#008F65] text-white shadow-xs'
                       : 'text-[#5F6B65] hover:text-[#17211D] hover:bg-white/60'
                   }`}
                 >
-                  <CheckCircle className="w-4 h-4" />
+                  <CheckCircle className="w-3.5 h-3.5" />
                   <span>Approved Players</span>
                   <span
-                    className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${
-                      activeTab === 'APPROVED' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
+                    className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      activeTab === 'APPROVED_PLAYERS' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
                     }`}
                   >
-                    {counts.approved}
+                    {allCounts.players.approved}
                   </span>
                 </button>
 
+                {/* 2. Pending Players */}
                 <button
-                  onClick={() => handleTabChange('PENDING')}
-                  className={`px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-2 cursor-pointer ${
-                    activeTab === 'PENDING'
+                  onClick={() => handleTabChange('PENDING_PLAYERS')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+                    activeTab === 'PENDING_PLAYERS'
                       ? 'bg-[#FF7900] text-white shadow-xs'
                       : 'text-[#5F6B65] hover:text-[#17211D] hover:bg-white/60'
                   }`}
                 >
-                  <Clock className="w-4 h-4" />
-                  <span>Pending Approvals</span>
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Pending Player Approvals</span>
                   <span
-                    className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${
-                      activeTab === 'PENDING' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
+                    className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      activeTab === 'PENDING_PLAYERS' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
                     }`}
                   >
-                    {counts.pending}
+                    {allCounts.players.pending}
                   </span>
                 </button>
 
+                {/* 3. Approved Coaches */}
                 <button
-                  onClick={() => handleTabChange('DELETED')}
-                  className={`px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-2 cursor-pointer ${
-                    activeTab === 'DELETED'
+                  onClick={() => handleTabChange('APPROVED_COACHES')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+                    activeTab === 'APPROVED_COACHES'
+                      ? 'bg-[#008F65] text-white shadow-xs'
+                      : 'text-[#5F6B65] hover:text-[#17211D] hover:bg-white/60'
+                  }`}
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  <span>Approved Coaches</span>
+                  <span
+                    className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      activeTab === 'APPROVED_COACHES' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
+                    }`}
+                  >
+                    {allCounts.coaches.approved}
+                  </span>
+                </button>
+
+                {/* 4. Pending Coaches */}
+                <button
+                  onClick={() => handleTabChange('PENDING_COACHES')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+                    activeTab === 'PENDING_COACHES'
+                      ? 'bg-[#FF7900] text-white shadow-xs'
+                      : 'text-[#5F6B65] hover:text-[#17211D] hover:bg-white/60'
+                  }`}
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Pending Coach Approvals</span>
+                  <span
+                    className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      activeTab === 'PENDING_COACHES' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
+                    }`}
+                  >
+                    {allCounts.coaches.pending}
+                  </span>
+                </button>
+
+                {/* 5. Approved Managers */}
+                <button
+                  onClick={() => handleTabChange('APPROVED_MANAGERS')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+                    activeTab === 'APPROVED_MANAGERS'
+                      ? 'bg-[#008F65] text-white shadow-xs'
+                      : 'text-[#5F6B65] hover:text-[#17211D] hover:bg-white/60'
+                  }`}
+                >
+                  <Briefcase className="w-3.5 h-3.5" />
+                  <span>Approved Managers</span>
+                  <span
+                    className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      activeTab === 'APPROVED_MANAGERS' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
+                    }`}
+                  >
+                    {allCounts.managers.approved}
+                  </span>
+                </button>
+
+                {/* 6. Pending Managers */}
+                <button
+                  onClick={() => handleTabChange('PENDING_MANAGERS')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+                    activeTab === 'PENDING_MANAGERS'
+                      ? 'bg-[#FF7900] text-white shadow-xs'
+                      : 'text-[#5F6B65] hover:text-[#17211D] hover:bg-white/60'
+                  }`}
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Pending Manager Approvals</span>
+                  <span
+                    className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      activeTab === 'PENDING_MANAGERS' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
+                    }`}
+                  >
+                    {allCounts.managers.pending}
+                  </span>
+                </button>
+
+                {/* 7. Approved Referees */}
+                <button
+                  onClick={() => handleTabChange('APPROVED_REFEREES')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+                    activeTab === 'APPROVED_REFEREES'
+                      ? 'bg-[#008F65] text-white shadow-xs'
+                      : 'text-[#5F6B65] hover:text-[#17211D] hover:bg-white/60'
+                  }`}
+                >
+                  <UserCheck className="w-3.5 h-3.5" />
+                  <span>Approved Referees</span>
+                  <span
+                    className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      activeTab === 'APPROVED_REFEREES' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
+                    }`}
+                  >
+                    {allCounts.referees.approved}
+                  </span>
+                </button>
+
+                {/* 8. Pending Referees */}
+                <button
+                  onClick={() => handleTabChange('PENDING_REFEREES')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+                    activeTab === 'PENDING_REFEREES'
+                      ? 'bg-[#FF7900] text-white shadow-xs'
+                      : 'text-[#5F6B65] hover:text-[#17211D] hover:bg-white/60'
+                  }`}
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Pending Referee Approvals</span>
+                  <span
+                    className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      activeTab === 'PENDING_REFEREES' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
+                    }`}
+                  >
+                    {allCounts.referees.pending}
+                  </span>
+                </button>
+
+                {/* 9. Deleted Players */}
+                <button
+                  onClick={() => handleTabChange('DELETED_PLAYERS')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+                    activeTab === 'DELETED_PLAYERS'
                       ? 'bg-rose-700 text-white shadow-xs'
                       : 'text-[#5F6B65] hover:text-[#17211D] hover:bg-white/60'
                   }`}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                   <span>Deleted Players</span>
                   <span
-                    className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${
-                      activeTab === 'DELETED' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
+                    className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      activeTab === 'DELETED_PLAYERS' ? 'bg-white/20 text-white' : 'bg-[#E1E8E3] text-[#17211D]'
                     }`}
                   >
-                    {counts.deleted}
+                    {allCounts.players.deleted}
                   </span>
                 </button>
 
-                {/* 1. New Admin Management Tab */}
+                {/* 10. Admin Management Tab */}
                 <button
                   onClick={() => handleTabChange('ADMINS')}
-                  className={`px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-2 cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
                     activeTab === 'ADMINS'
                       ? 'bg-[#17211D] text-white shadow-xs'
                       : 'text-[#5F6B65] hover:text-[#17211D] hover:bg-white/60'
                   }`}
                 >
-                  <Users className="w-4 h-4 text-[#00B889]" />
+                  <Users className="w-3.5 h-3.5 text-[#00B889]" />
                   <span>Admin Management</span>
                   <span
-                    className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${
+                    className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black ${
                       activeTab === 'ADMINS' ? 'bg-[#008F65] text-white' : 'bg-[#E1E8E3] text-[#17211D]'
                     }`}
                   >
@@ -834,7 +1223,7 @@ export default function AdminDashboardPage() {
                 </button>
               </div>
 
-              {/* Player Search Bar (shown when on player tabs) */}
+              {/* Search Bar (shown when on player or official tabs) */}
               {activeTab !== 'ADMINS' && (
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1 sm:w-80">
@@ -843,7 +1232,11 @@ export default function AdminDashboardPage() {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search name, phone, NSRS ID..."
+                      placeholder={
+                        isOfficialTab(activeTab)
+                          ? "Search name, email, phone, district..."
+                          : "Search name, phone, NSRS ID..."
+                      }
                       className="w-full pl-9 pr-9 py-2 rounded-lg bg-white border border-[#E1E8E3] text-xs text-[#17211D] placeholder-[#5F6B65] focus:outline-none focus:border-[#008F65] focus:ring-1 focus:ring-[#008F65] transition-colors"
                     />
                     {searchQuery && (
@@ -857,7 +1250,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <button
-                    onClick={() => fetchRegistrations(false)}
+                    onClick={() => fetchCurrentData(false)}
                     disabled={isRefreshing}
                     title="Refresh registration data"
                     className="p-2.5 rounded-lg bg-[#F5F7F5] border border-[#E1E8E3] text-[#5F6B65] hover:text-[#008F65] hover:bg-[#EAF7F1] transition-colors cursor-pointer"
@@ -868,16 +1261,16 @@ export default function AdminDashboardPage() {
               )}
             </div>
 
-            {/* Matching filter summary for Player tabs */}
+            {/* Matching filter summary */}
             {activeTab !== 'ADMINS' && (
               <div className="flex items-center justify-between text-xs text-[#5F6B65] pt-1">
                 <div>
                   Showing{' '}
                   <span className="font-bold text-[#17211D]">
-                    {players.length}
+                    {isOfficialTab(activeTab) ? officials.length : players.length}
                   </span>{' '}
                   of <span className="font-bold text-[#17211D]">{totalMatching}</span>{' '}
-                  registrations in <span className="font-semibold uppercase">{activeTab}</span>
+                  registrations in <span className="font-semibold uppercase">{getTabTitle(activeTab)}</span>
                   {debouncedSearch && <span> matching "{debouncedSearch}"</span>}
                 </div>
               </div>
@@ -958,7 +1351,7 @@ export default function AdminDashboardPage() {
                       Create New Admin
                     </h3>
                     <p className="text-xs text-[#5F6B65]">
-                      Issue a new administrative credential for Rugby Uttarakhand.
+                      Issue a new administrative credential for Uttarakhand Rugby Association.
                     </p>
                   </div>
 
@@ -1314,6 +1707,32 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
             </div>
+          ) : isOfficialTab(activeTab) ? (
+            /* ======================================================== */
+            /* TAB CONTENT: OFFICIAL REGISTRATIONS (Coach, Mgr, Referee)*/
+            /* ======================================================== */
+            <OfficialTable
+              type={getOfficialTypeAndStatus(activeTab).type}
+              status={getOfficialTypeAndStatus(activeTab).status}
+              officials={officials}
+              totalMatching={totalMatching}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              totalPages={totalPages}
+              isLoading={isLoadingData}
+              onPageChange={(page) => setCurrentPage(page)}
+              onViewDetails={(off) => setSelectedOfficial(off)}
+              onApprove={(id, name) => handleApproveOfficial(id, name)}
+              onReject={(off) => {
+                setRejectModalItem({
+                  id: off._id,
+                  name: off.fullName,
+                  role: off.type,
+                  registrationId: off.registrationId,
+                });
+              }}
+              processingId={processingId}
+            />
           ) : (
             /* ======================================================== */
             /* TAB CONTENT: PLAYER REGISTRATIONS (Approved/Pending/Del) */
@@ -1335,12 +1754,12 @@ export default function AdminDashboardPage() {
                       <Search className="w-6 h-6" />
                     </div>
                     <h3 className="text-base font-black text-[#17211D] uppercase">
-                      No {activeTab.toLowerCase()} registrations found
+                      No {getTabTitle(activeTab).toLowerCase()} found
                     </h3>
                     <p className="text-xs text-[#5F6B65] max-w-sm mx-auto">
                       {debouncedSearch
-                        ? `No records matching "${debouncedSearch}" in the ${activeTab.toLowerCase()} list.`
-                        : `Currently there are no player registrations with status ${activeTab}.`}
+                        ? `No records matching "${debouncedSearch}" in the ${getTabTitle(activeTab).toLowerCase()} list.`
+                        : `Currently there are no player registrations in ${getTabTitle(activeTab)}.`}
                     </p>
                     {debouncedSearch && (
                       <button
@@ -1360,16 +1779,16 @@ export default function AdminDashboardPage() {
                         <th className="py-3.5 px-4">Phone Number</th>
                         <th className="py-3.5 px-4">Address</th>
                         <th className="py-3.5 px-4">NSRS ID</th>
-                        {activeTab === 'APPROVED' && (
+                        {activeTab === 'APPROVED_PLAYERS' && (
                           <>
                             <th className="py-3.5 px-4">Approved By</th>
                             <th className="py-3.5 px-4">Approval Date</th>
                           </>
                         )}
-                        {activeTab === 'PENDING' && (
+                        {activeTab === 'PENDING_PLAYERS' && (
                           <th className="py-3.5 px-4">Registration Date</th>
                         )}
-                        {activeTab === 'DELETED' && (
+                        {activeTab === 'DELETED_PLAYERS' && (
                           <>
                             <th className="py-3.5 px-4">Deleted By</th>
                             <th className="py-3.5 px-4">Deletion Date</th>
@@ -1436,7 +1855,7 @@ export default function AdminDashboardPage() {
                           </td>
 
                           {/* Tab 1: Approved By & Date */}
-                          {activeTab === 'APPROVED' && (
+                          {activeTab === 'APPROVED_PLAYERS' && (
                             <>
                               <td className="py-4 px-4 whitespace-nowrap">
                                 <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#EAF7F1] text-[#008F65] font-bold text-xs border border-[#008F65]/20">
@@ -1451,14 +1870,14 @@ export default function AdminDashboardPage() {
                           )}
 
                           {/* Tab 2: Registration Date */}
-                          {activeTab === 'PENDING' && (
+                          {activeTab === 'PENDING_PLAYERS' && (
                             <td className="py-4 px-4 whitespace-nowrap text-[#5F6B65] font-medium">
                               {formatDate(player.createdAt)}
                             </td>
                           )}
 
                           {/* Tab 3: Deleted By & Deletion Date */}
-                          {activeTab === 'DELETED' && (
+                          {activeTab === 'DELETED_PLAYERS' && (
                             <>
                               <td className="py-4 px-4 whitespace-nowrap text-rose-700 font-semibold">
                                 {player.deletedBy || 'Admin'}
@@ -1482,15 +1901,15 @@ export default function AdminDashboardPage() {
                               </button>
 
                               {/* Tab 1 (Approved): Badge */}
-                              {activeTab === 'APPROVED' && (
+                              {activeTab === 'APPROVED_PLAYERS' && (
                                 <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#EAF7F1] text-[#008F65] font-bold text-[11px] border border-[#008F65]/20">
                                   <Check className="w-3 h-3 mr-1" />
                                   Approved
                                 </span>
                               )}
 
-                              {/* Tab 2 (Pending): Approve & Delete Buttons */}
-                              {activeTab === 'PENDING' && (
+                              {/* Tab 2 (Pending): Approve, Reject & Delete Buttons */}
+                              {activeTab === 'PENDING_PLAYERS' && (
                                 <>
                                   <button
                                     onClick={() => handleApprove(player)}
@@ -1507,10 +1926,26 @@ export default function AdminDashboardPage() {
 
                                   <button
                                     onClick={() =>
+                                      setRejectModalItem({
+                                        id: player._id,
+                                        name: player.fullName,
+                                        role: 'PLAYER',
+                                        registrationId: player.registrationId,
+                                      })
+                                    }
+                                    disabled={processingId === player._id}
+                                    className="px-3 py-1.5 rounded-lg bg-white hover:bg-rose-50 text-rose-600 border border-rose-300 hover:border-rose-500 font-bold text-[11px] uppercase transition-colors flex items-center space-x-1 cursor-pointer"
+                                  >
+                                    <X className="w-3 h-3" />
+                                    <span>Reject</span>
+                                  </button>
+
+                                  <button
+                                    onClick={() =>
                                       setDeleteConfirmPlayer({ player, isPermanent: false })
                                     }
                                     disabled={processingId === player._id}
-                                    className="px-3 py-1.5 rounded-lg bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 hover:border-rose-400 font-bold text-[11px] uppercase transition-colors flex items-center space-x-1 cursor-pointer"
+                                    className="px-3 py-1.5 rounded-lg bg-white hover:bg-zinc-100 text-[#5F6B65] border border-[#E1E8E3] hover:border-zinc-400 font-bold text-[11px] uppercase transition-colors flex items-center space-x-1 cursor-pointer"
                                   >
                                     <Trash2 className="w-3 h-3" />
                                     <span>Delete</span>
@@ -1519,7 +1954,7 @@ export default function AdminDashboardPage() {
                               )}
 
                               {/* Tab 3 (Deleted): Restore & Permanent Delete Buttons */}
-                              {activeTab === 'DELETED' && (
+                              {activeTab === 'DELETED_PLAYERS' && (
                                 <>
                                   <button
                                     onClick={() => handleRestore(player)}
@@ -1760,16 +2195,34 @@ export default function AdminDashboardPage() {
               {/* Quick actions from inside modal */}
               <div className="flex items-center space-x-2">
                 {selectedPlayer.status === 'PENDING' && (
-                  <button
-                    onClick={() => {
-                      handleApprove(selectedPlayer);
-                      setSelectedPlayer(null);
-                    }}
-                    className="px-5 py-2.5 rounded-lg bg-[#008F65] hover:bg-[#007553] text-white font-black text-xs uppercase transition-colors flex items-center space-x-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Approve Player</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        const playerToReject = selectedPlayer;
+                        setSelectedPlayer(null);
+                        setRejectModalItem({
+                          id: playerToReject._id,
+                          name: playerToReject.fullName,
+                          role: 'PLAYER',
+                          registrationId: playerToReject.registrationId,
+                        });
+                      }}
+                      className="px-4 py-2.5 rounded-lg bg-white hover:bg-rose-50 text-rose-600 border border-rose-300 font-bold text-xs uppercase transition-colors flex items-center space-x-1.5 cursor-pointer shadow-xs"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Reject</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleApprove(selectedPlayer);
+                        setSelectedPlayer(null);
+                      }}
+                      className="px-5 py-2.5 rounded-lg bg-[#008F65] hover:bg-[#007553] text-white font-black text-xs uppercase transition-colors flex items-center space-x-1.5 cursor-pointer shadow-xs"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Approve Player</span>
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -1959,6 +2412,44 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* 9. Official Details Modal */}
+      <OfficialDetailsModal
+        official={selectedOfficial}
+        onClose={() => setSelectedOfficial(null)}
+        onApprove={
+          selectedOfficial?.status === 'PENDING'
+            ? (id) => {
+                handleApproveOfficial(id, selectedOfficial.fullName);
+                setSelectedOfficial(null);
+              }
+            : undefined
+        }
+        onReject={
+          selectedOfficial?.status === 'PENDING'
+            ? (off) => {
+                setSelectedOfficial(null);
+                setRejectModalItem({
+                  id: off._id,
+                  name: off.fullName,
+                  role: off.type,
+                  registrationId: off.registrationId,
+                });
+              }
+            : undefined
+        }
+      />
+
+      {/* 10. Rejection Dialog (Player or Official) */}
+      <RejectionModal
+        isOpen={!!rejectModalItem}
+        onClose={() => setRejectModalItem(null)}
+        onConfirm={handleConfirmRejection}
+        applicantName={rejectModalItem?.name || ''}
+        applicantRole={rejectModalItem?.role || 'Applicant'}
+        registrationId={rejectModalItem?.registrationId || ''}
+        isProcessing={!!processingId}
+      />
     </div>
   );
 }
